@@ -1,6 +1,6 @@
 {
-  "name": "FocusMan - TDAH Productivity",
-  "short_name": "FocusMan",
+  "name": "Focus - Asistente TDAH",
+  "short_name": "Focus",
   "description": "Tu asistente de productividad para TDAH con Mega Man",
   "start_url": "./index.html",
   "display": "standalone",

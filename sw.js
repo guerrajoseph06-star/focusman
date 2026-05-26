@@ -1,4 +1,4 @@
-const CACHE_NAME = 'focusman-v1';
+const CACHE_NAME = 'focus-v2';
 const BASE = self.location.pathname.replace('sw.js', '');
 
 const ARCHIVOS = [
@@ -76,9 +76,41 @@ self.addEventListener('notificationclick', e => {
   }
 });
 
+// Notificaciones en segundo plano (Periodic Background Sync)
+self.addEventListener('periodicsync', e => {
+  if (e.tag === 'focus-checkin') {
+    e.waitUntil(mostrarCheckin());
+  }
+});
+
+async function mostrarCheckin() {
+  const clients_list = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
+  // Si la app está abierta y en primer plano, no mostrar notificación del sistema
+  const focused = clients_list.some(c => c.focused);
+  if (focused) return;
+
+  await self.registration.showNotification('⚡ Focus — ¿Qué estás haciendo?', {
+    body: 'Es hora del check-in. ¿Sigues trabajando en tu tarea?',
+    icon: BASE + 'icon-192.png',
+    badge: BASE + 'icon-192.png',
+    requireInteraction: true,
+    tag: 'focus-checkin',
+    actions: [
+      { action: 'si', title: '✅ Sí, trabajando' },
+      { action: 'no', title: '❌ Me perdí' }
+    ],
+    data: {}
+  });
+}
+
 // Escuchar mensajes de la app para programar notificaciones
 self.addEventListener('message', e => {
   if (e.data && e.data.type === 'PING') {
     e.source.postMessage({ type: 'PONG' });
+  }
+  if (e.data && e.data.type === 'SCHEDULE_NOTIF') {
+    // Notificación programada desde la app (cuando está en background)
+    const delay = e.data.delay || 30 * 60 * 1000;
+    setTimeout(() => mostrarCheckin(), delay);
   }
 });
