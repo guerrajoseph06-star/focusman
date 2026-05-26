@@ -1,4 +1,4 @@
-const CACHE_NAME = 'focus-v2';
+const CACHE_NAME = 'focus-v3';
 const BASE = self.location.pathname.replace('sw.js', '');
 
 const ARCHIVOS = [
@@ -13,6 +13,9 @@ const ARCHIVOS = [
   BASE + 'sprites/megaman-dormido.png',
   BASE + 'sprites/megaman-urgente.png'
 ];
+
+// Almacén de notificaciones programadas
+const scheduled = new Map();
 
 self.addEventListener('install', e => {
   e.waitUntil(
@@ -36,81 +39,115 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// Notificaciones de check-in desde segundo plano
+// ──────────────────────────────
+// Mostrar notificación
+// ──────────────────────────────
+async function mostrarNotif(title, body, urgent, withActions) {
+  const opts = {
+    body,
+    icon: BASE + 'icon-192.png',
+    badge: BASE + 'icon-192.png',
+    image: BASE + 'sprites/megaman-alerta.png',
+    vibrate: urgent ? [300, 100, 300, 100, 300, 100, 500] : [200, 100, 200],
+    requireInteraction: !!urgent,
+    silent: false,
+    tag: 'focus-' + Date.now(),
+    renotify: true,
+    timestamp: Date.now()
+  };
+  if (withActions) {
+    opts.actions = [
+      { action: 'si', title: '✅ Sí, trabajando' },
+      { action: 'no', title: '❌ Me perdí' }
+    ];
+  }
+  await self.registration.showNotification(title, opts);
+}
+
+// ──────────────────────────────
+// Programación de notificaciones (setTimeout)
+// ──────────────────────────────
+function programar(id, title, body, delayMs, urgent, withActions) {
+  // Cancelar la anterior si existía
+  if (scheduled.has(id)) {
+    clearTimeout(scheduled.get(id));
+    scheduled.delete(id);
+  }
+  const timer = setTimeout(async () => {
+    scheduled.delete(id);
+    // Verificar si la app está abierta en primer plano
+    const cli = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const focused = cli.some(c => c.focused);
+    if (!focused) {
+      await mostrarNotif(title, body, urgent, withActions);
+    } else {
+      // Notificar a la app por mensaje
+      cli.forEach(c => c.postMessage({ type: 'scheduled_fired', id, title, body }));
+    }
+  }, delayMs);
+  scheduled.set(id, timer);
+}
+
+function cancelar(id) {
+  if (scheduled.has(id)) {
+    clearTimeout(scheduled.get(id));
+    scheduled.delete(id);
+  }
+}
+
+function cancelarTodo() {
+  scheduled.forEach(t => clearTimeout(t));
+  scheduled.clear();
+}
+
+// ──────────────────────────────
+// Mensajes desde la app
+// ──────────────────────────────
+self.addEventListener('message', e => {
+  const d = e.data || {};
+  if (d.type === 'SCHEDULE') {
+    programar(d.id, d.title, d.body, d.delayMs, d.urgent, d.actions);
+  } else if (d.type === 'CANCEL') {
+    cancelar(d.id);
+  } else if (d.type === 'CANCEL_ALL') {
+    cancelarTodo();
+  } else if (d.type === 'PING') {
+    e.source && e.source.postMessage({ type: 'PONG' });
+  }
+});
+
+// ──────────────────────────────
+// Periodic Background Sync (respaldo)
+// ──────────────────────────────
+self.addEventListener('periodicsync', e => {
+  if (e.tag === 'focus-checkin') {
+    e.waitUntil(checkinBackground());
+  }
+});
+
+async function checkinBackground() {
+  const cli = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
+  if (cli.some(c => c.focused)) return;
+  await mostrarNotif('⚡ Focus — Check-in', '¿Sigues con tu tarea? Toca para responder.', true, true);
+}
+
+// ──────────────────────────────
+// Click en notificaciones
+// ──────────────────────────────
 self.addEventListener('notificationclick', e => {
   e.notification.close();
   const action = e.action;
-  const data = e.notification.data || {};
 
-  if (action === 'si') {
-    // Abrir la app si no está abierta
-    e.waitUntil(
-      clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
-        if (list.length > 0) {
-          list[0].focus();
-          list[0].postMessage({ type: 'checkin_ok', taskId: data.taskId });
-        } else {
-          clients.openWindow(BASE + 'index.html');
-        }
-      })
-    );
-  } else if (action === 'no') {
-    e.waitUntil(
-      clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
-        if (list.length > 0) {
-          list[0].focus();
-          list[0].postMessage({ type: 'checkin_no', taskId: data.taskId });
-        } else {
-          clients.openWindow(BASE + 'index.html');
-        }
-      })
-    );
-  } else {
-    // Click en la notificación directamente → abrir app
-    e.waitUntil(
-      clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
-        if (list.length > 0) return list[0].focus();
-        return clients.openWindow(BASE + 'index.html');
-      })
-    );
-  }
-});
-
-// Notificaciones en segundo plano (Periodic Background Sync)
-self.addEventListener('periodicsync', e => {
-  if (e.tag === 'focus-checkin') {
-    e.waitUntil(mostrarCheckin());
-  }
-});
-
-async function mostrarCheckin() {
-  const clients_list = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
-  // Si la app está abierta y en primer plano, no mostrar notificación del sistema
-  const focused = clients_list.some(c => c.focused);
-  if (focused) return;
-
-  await self.registration.showNotification('⚡ Focus — ¿Qué estás haciendo?', {
-    body: 'Es hora del check-in. ¿Sigues trabajando en tu tarea?',
-    icon: BASE + 'icon-192.png',
-    badge: BASE + 'icon-192.png',
-    requireInteraction: true,
-    tag: 'focus-checkin',
-    actions: [
-      { action: 'si', title: '✅ Sí, trabajando' },
-      { action: 'no', title: '❌ Me perdí' }
-    ],
-    data: {}
-  });
-}
-
-// Escuchar mensajes de la app para programar notificaciones
-self.addEventListener('message', e => {
-  if (e.data && e.data.type === 'PING') {
-    e.source.postMessage({ type: 'PONG' });
-  }
-  if (e.data && e.data.type === 'SCHEDULE_NOTIF') {
-    // Notificación programada desde la app (cuando está en background)
-    const delay = e.data.delay || 30 * 60 * 1000;
-    setTimeout(() => mostrarCheckin(), delay);
-  }
+  e.waitUntil((async () => {
+    const cli = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    if (cli.length > 0) {
+      const c = cli[0];
+      await c.focus();
+      if (action === 'si') c.postMessage({ type: 'checkin_ok' });
+      else if (action === 'no') c.postMessage({ type: 'checkin_no' });
+    } else {
+      const url = BASE + 'index.html' + (action ? ('#' + action) : '');
+      await clients.openWindow(url);
+    }
+  })());
 });

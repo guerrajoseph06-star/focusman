@@ -120,13 +120,21 @@ select option{background:#080f1e}
 .stat-lbl{font-size:0.68em;color:#3a6080;margin-top:4px}
 
 /* MODALS */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;align-items:flex-end;justify-content:center}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(5,13,31,0.55);backdrop-filter:blur(4px);z-index:200;align-items:flex-end;justify-content:center}
 .modal-overlay.show{display:flex}
-.modal-sheet{background:#0a1525;border-radius:22px 22px 0 0;border-top:2px solid #1a3050;padding:22px 18px 44px;width:100%;max-width:480px}
-.modal-title{font-size:1.1em;font-weight:800;color:#e2e8f0;margin-bottom:5px}
-.modal-sub{font-size:0.82em;color:#3a6080;margin-bottom:16px;line-height:1.5}
-.distract-reminder{background:#0d1e35;border-radius:10px;padding:12px;margin-bottom:16px;font-size:0.85em;color:#60a5fa;line-height:1.5}
+.modal-sheet{background:#0a1525;border-radius:22px 22px 0 0;border-top:2px solid #1e4a7a;padding:22px 18px 44px;width:100%;max-width:480px;box-shadow:0 -10px 40px rgba(0,0,0,0.7)}
+.modal-mascot{display:flex;justify-content:center;margin:-50px 0 8px;position:relative;z-index:2}
+.modal-mascot-spr{background-repeat:no-repeat;background-position:0 0}
+.modal-title{font-size:1.15em;font-weight:800;color:#e2e8f0;margin-bottom:5px;text-align:center}
+.modal-sub{font-size:0.85em;color:#7eb8f7;margin-bottom:16px;line-height:1.5;text-align:center}
+.distract-reminder{background:#0d1e35;border:1px solid #1e4a7a;border-radius:10px;padding:12px;margin-bottom:16px;font-size:0.88em;color:#a8d5ff;line-height:1.5}
 .distract-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.break-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.break-opt{padding:14px 8px;border-radius:11px;border:2px solid #1a3050;background:#0d1e35;color:#e2e8f0;cursor:pointer;font-size:0.85em;font-weight:700;font-family:inherit;text-align:center;transition:all 0.15s}
+.break-opt:active{transform:scale(0.96)}
+.break-opt:hover,.break-opt.selected{border-color:#7c3aed;background:#1a0a35;color:#a78bfa}
+.break-opt .bo-val{font-size:1.4em;display:block;margin-bottom:2px;font-weight:800}
+.break-opt .bo-lbl{font-size:0.72em;color:#3a6080}
 
 /* IN-APP NOTIFICATION */
 #notif-banner{display:none;position:fixed;top:10px;left:10px;right:10px;max-width:calc(480px - 20px);margin:0 auto;background:#0d1e35;border:1.5px solid #1e6fff;border-radius:14px;padding:13px 14px;z-index:300;box-shadow:0 6px 30px rgba(0,0,0,0.6);animation:slideIn 0.3s ease}
@@ -207,30 +215,25 @@ select option{background:#080f1e}
         <div id="mascot-container" onclick="mascotTap()">
           <div id="mascot-sprite"></div>
         </div>
-        <div id="mascot-speech">¡Listo para ayudarte! ¿Qué vamos a conquistar hoy?</div>
+        <div id="mascot-speech">¡Listo para ayudarte! Toca una tarea para empezar.</div>
       </div>
 
-      <button id="btn-que-hago" onclick="openQueHago()">⚡ ¿QUÉ HAGO AHORA?</button>
-
-      <div class="card">
-        <div class="card-label">🎯 Tarea actual</div>
-        <div id="current-task-content"><div class="no-task">Sin tarea activa — toca el botón de arriba</div></div>
+      <!-- ESTADO ACTUAL -->
+      <div id="state-card" class="card">
+        <div id="state-label" class="card-label">📌 Estado</div>
+        <div id="state-content"></div>
+        <div id="state-timer" style="display:none;font-size:2.4em;font-weight:800;color:#7c3aed;text-align:center;margin:8px 0;letter-spacing:-1px"></div>
+        <div id="state-actions"></div>
       </div>
 
-      <div class="quick-actions">
-        <button class="quick-btn btn-complete" onclick="completarActual()">
-          <span class="qe">✅</span>¡Completé una!
-        </button>
-        <button class="quick-btn btn-distract" onclick="openDistract()">
-          <span class="qe">🛑</span>Me distrajé
-        </button>
-      </div>
+      <!-- BOTÓN AYUDA -->
+      <button id="btn-que-hago" onclick="openQueHago()" style="margin-top:10px">⚡ ¿QUÉ HAGO AHORA?</button>
 
       <div class="card">
         <div class="card-label">📊 Hoy</div>
         <div class="mini-stats">
           <div><div class="mini-stat-val" style="color:#22c55e" id="h-comp">0</div><div class="mini-stat-lbl">Completadas</div></div>
-          <div><div class="mini-stat-val" style="color:#1e90ff" id="h-pomo">0</div><div class="mini-stat-lbl">Pomodoros</div></div>
+          <div><div class="mini-stat-val" style="color:#7c3aed" id="h-foco">0m</div><div class="mini-stat-lbl">Enfocado</div></div>
           <div><div class="mini-stat-val" style="color:#f59e0b" id="h-pend">0</div><div class="mini-stat-lbl">Pendientes</div></div>
         </div>
       </div>
@@ -238,7 +241,7 @@ select option{background:#080f1e}
       <div id="notif-card" class="card">
         <div style="font-size:0.85em;margin-bottom:10px;line-height:1.5">
           <strong style="color:#7eb8f7">🔔 Activa las notificaciones</strong><br>
-          <span style="color:#3a6080">Focus te interrumpirá cuando te pierdas, aunque estés en otra app.</span>
+          <span style="color:#3a6080">Focus te enviará alertas con sonido cuando te pierdas, aunque la pantalla esté apagada.</span>
         </div>
         <button class="btn-primary" onclick="activarNotif()" style="padding:10px;font-size:0.85em">Activar notificaciones</button>
       </div>
@@ -367,6 +370,7 @@ select option{background:#080f1e}
 <!-- MODAL: Distracción -->
 <div class="modal-overlay" id="modal-distract">
   <div class="modal-sheet">
+    <div class="modal-mascot"><div class="modal-mascot-spr" id="modal-mascot-distract"></div></div>
     <div class="modal-title">🛑 ¡Para un momento!</div>
     <div class="modal-sub">Notaste que te distrajiste — eso ya es un gran paso. ¿Qué decides?</div>
     <div class="distract-reminder" id="distract-info">Tu tarea actual</div>
@@ -374,17 +378,34 @@ select option{background:#080f1e}
       <button class="quick-btn btn-complete" onclick="volverTrabajo()" style="padding:14px">
         <span class="qe">💪</span>Volver al trabajo
       </button>
-      <button class="quick-btn" onclick="descanso5()" style="background:#0a1525;border:1.5px solid #3a6080;color:#7eb8f7;padding:14px">
-        <span class="qe">☕</span>Descanso 5 min
+      <button class="quick-btn" onclick="openBreak()" style="background:#0a1525;border:1.5px solid #7c3aed;color:#a78bfa;padding:14px">
+        <span class="qe">☕</span>Tomar descanso
       </button>
     </div>
     <button class="btn-secondary" onclick="closeDistract()" style="margin-top:10px">Cerrar</button>
   </div>
 </div>
 
+<!-- MODAL: Tomar descanso -->
+<div class="modal-overlay" id="modal-break">
+  <div class="modal-sheet">
+    <div class="modal-mascot"><div class="modal-mascot-spr" id="modal-mascot-break"></div></div>
+    <div class="modal-title">☕ ¿Cuánto descansas?</div>
+    <div class="modal-sub">Te avisaré cuando termine, aunque tengas la pantalla apagada.</div>
+    <div class="break-options">
+      <button class="break-opt" onclick="iniciarDescanso(5)"><span class="bo-val">5</span><span class="bo-lbl">minutos</span></button>
+      <button class="break-opt" onclick="iniciarDescanso(15)"><span class="bo-val">15</span><span class="bo-lbl">minutos</span></button>
+      <button class="break-opt" onclick="iniciarDescanso(30)"><span class="bo-val">30</span><span class="bo-lbl">minutos</span></button>
+      <button class="break-opt" onclick="iniciarDescanso(60)"><span class="bo-val">1h</span><span class="bo-lbl">una hora</span></button>
+    </div>
+    <button class="btn-secondary" onclick="closeBreak()">Cancelar</button>
+  </div>
+</div>
+
 <!-- MODAL: Qué hago ahora -->
 <div class="modal-overlay" id="modal-quehago">
   <div class="modal-sheet">
+    <div class="modal-mascot"><div class="modal-mascot-spr" id="modal-mascot-quehago"></div></div>
     <div class="modal-title">⚡ ¿Qué hago ahora?</div>
     <div class="modal-sub">Te sugiero la mejor tarea según cómo estás en este momento.</div>
     <div class="form-group">
@@ -413,6 +434,8 @@ const SP = {
 };
 const DW = 150; // display width px
 let spFrame=0, spTimer=null, spCurrent='';
+// Modal sprites
+const modalSpriteState = {};
 
 function playAnim(name){
   if(spCurrent===name && spTimer) return;
@@ -433,6 +456,33 @@ function playAnim(name){
   spTimer=setInterval(tick,s.ms);
 }
 
+function playModalAnim(elId, name, width){
+  const W = width || 100;
+  const s=SP[name];
+  const sc=W/s.fw;
+  const dh=Math.round(s.fh*sc);
+  const el=document.getElementById(elId);
+  if(!el) return;
+  el.style.cssText=`width:${W}px;height:${dh}px;background-image:url('./sprites/megaman-${name}.png');background-size:${Math.round(s.sw*sc)}px ${Math.round(s.sh*sc)}px;background-repeat:no-repeat`;
+  if(modalSpriteState[elId]?.timer) clearInterval(modalSpriteState[elId].timer);
+  modalSpriteState[elId]={frame:0};
+  function tick(){
+    const f=modalSpriteState[elId].frame;
+    const col=f%s.c, row=Math.floor(f/s.c);
+    el.style.backgroundPosition=`${-(col*W)}px ${-(row*dh)}px`;
+    modalSpriteState[elId].frame=(f+1)%s.n;
+  }
+  tick();
+  modalSpriteState[elId].timer=setInterval(tick,s.ms);
+}
+
+function stopModalAnim(elId){
+  if(modalSpriteState[elId]?.timer){
+    clearInterval(modalSpriteState[elId].timer);
+    modalSpriteState[elId].timer=null;
+  }
+}
+
 function setSpeech(t){ document.getElementById('mascot-speech').textContent=t; }
 
 // ══════════════════════════════
@@ -443,12 +493,15 @@ const S={
   set tasks(v){localStorage.setItem('fm_t',JSON.stringify(v))},
   get cfg(){return JSON.parse(localStorage.getItem('fm_c')||'{"interval":30,"notif":false}')},
   set cfg(v){localStorage.setItem('fm_c',JSON.stringify(v))},
-  get stats(){return JSON.parse(localStorage.getItem('fm_s')||'{"streak":0,"date":null,"comp":0,"pomo":0}')},
+  get stats(){return JSON.parse(localStorage.getItem('fm_s')||'{"streak":0,"date":null,"comp":0,"pomo":0,"focoMs":0}')},
   set stats(v){localStorage.setItem('fm_s',JSON.stringify(v))},
   get cur(){return localStorage.getItem('fm_cur')||null},
   set cur(v){v?localStorage.setItem('fm_cur',v):localStorage.removeItem('fm_cur')},
   get lastAct(){return parseInt(localStorage.getItem('fm_la')||'0')},
-  set lastAct(v){localStorage.setItem('fm_la',String(v))}
+  set lastAct(v){localStorage.setItem('fm_la',String(v))},
+  // Estado: 'idle' | 'working' | 'resting'
+  get state(){return JSON.parse(localStorage.getItem('fm_state')||'{"mode":"idle","start":0,"end":0}')},
+  set state(v){localStorage.setItem('fm_state',JSON.stringify(v))}
 };
 
 // ══════════════════════════════
@@ -542,20 +595,18 @@ function taskHTML(t){
   const el={alto:'tag-alto',medio:'tag-medio',bajo:'tag-bajo'}[t.energy]||'tag-bajo';
   const elabel={alto:'🔴 Alta',medio:'🟡 Media',bajo:'🟢 Baja'}[t.energy]||'';
   const isCur=S.cur===t.id;
-  return `<div class="task-item" style="${isCur?'border-left:3px solid #1e90ff;padding-left:10px':''}">
-    <div class="task-check ${t.done?'done':''}" onclick="toggleTask('${t.id}')">${t.done?'✓':''}</div>
+  const clickAction=t.done?'':`onclick="setCur('${t.id}')"`;
+  return `<div class="task-item" style="${isCur?'border-left:3px solid #7c3aed;padding-left:10px;background:#1a0a35':''};cursor:${t.done?'default':'pointer'}" ${clickAction}>
+    <div class="task-check ${t.done?'done':''}" onclick="event.stopPropagation();toggleTask('${t.id}')">${t.done?'✓':''}</div>
     <div class="task-info">
       <div class="task-name ${t.done?'done-text':''}">${t.text}</div>
       ${t.step?`<div class="task-step">→ ${t.step}</div>`:''}
       <div class="task-meta">
         <span class="tag ${el}">${elabel}</span>
-        ${isCur?'<span class="tag tag-current">🎯 Actual</span>':''}
+        ${isCur?'<span class="tag tag-current">🎯 ENFOCADA</span>':!t.done?'<span class="tag" style="background:#0a1525;color:#3a6080">Toca para enfocar</span>':''}
       </div>
     </div>
-    <div class="task-actions">
-      ${!t.done?`<button class="btn-enfocar" onclick="setCur('${t.id}')">🎯 Enfocar</button>`:''}
-      <button class="btn-del" onclick="delTask('${t.id}')">🗑</button>
-    </div>
+    <button class="btn-del" onclick="event.stopPropagation();delTask('${t.id}')">🗑</button>
   </div>`;
 }
 
@@ -585,8 +636,14 @@ function delTask(id){
 
 function setCur(id){
   S.cur=id; S.lastAct=Date.now();
+  // Auto-activa modo TRABAJANDO al elegir tarea
+  S.state={mode:'working',start:Date.now(),end:0};
   const t=S.tasks.find(x=>x.id===id);
-  if(t){ setSpeech(`¡Vamos! Primer paso: ${t.step||t.text}`); playAnim('idle'); }
+  if(t){
+    setSpeech(`¡Vamos! Primer paso: ${t.step||t.text}`);
+    playAnim('idle');
+    programarCheckin();
+  }
   go('inicio');
 }
 
@@ -597,22 +654,67 @@ function renderHome(){
   const st=S.stats, tasks=S.tasks;
   document.getElementById('streak-val').textContent=st.streak;
   document.getElementById('h-comp').textContent=st.comp;
-  document.getElementById('h-pomo').textContent=st.pomo;
+  document.getElementById('h-foco').textContent=Math.floor((st.focoMs||0)/60000)+'m';
   document.getElementById('h-pend').textContent=tasks.filter(t=>!t.done).length;
 
+  const state=S.state, mode=state.mode||'idle';
   const cur=S.cur, t=cur?tasks.find(x=>x.id===cur&&!x.done):null;
-  const el=document.getElementById('current-task-content');
-  if(t){
-    el.innerHTML=`<div class="current-task-name">${t.text}</div>${t.step?`<div class="current-task-step">→ ${t.step}</div>`:''}`;
+  const stateLabel=document.getElementById('state-label');
+  const stateContent=document.getElementById('state-content');
+  const stateTimer=document.getElementById('state-timer');
+  const stateActions=document.getElementById('state-actions');
+  const stateCard=document.getElementById('state-card');
+
+  if(mode==='resting'){
+    const remaining=Math.max(0,state.end-Date.now());
+    stateCard.style.borderColor='#7c3aed';
+    stateLabel.innerHTML='☕ <span style="color:#a78bfa">DESCANSANDO</span>';
+    stateLabel.style.color='#a78bfa';
+    stateContent.innerHTML=`<div style="text-align:center;color:#7eb8f7;font-size:0.88em;margin-top:4px">Te avisaré cuando termine</div>`;
+    stateTimer.style.display='block';
+    const m=Math.floor(remaining/60000), s=Math.floor((remaining%60000)/1000);
+    stateTimer.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    stateActions.innerHTML=`<button class="btn-primary" onclick="terminarDescanso()" style="background:linear-gradient(135deg,#7c3aed,#5b21b6);margin-top:10px">▶ Volver al trabajo ahora</button>`;
+    if(remaining<=0){
+      terminarDescanso(true);
+    }
+  } else if(mode==='working' && t){
+    const elapsed=Date.now()-state.start;
+    const min=Math.floor(elapsed/60000);
+    stateCard.style.borderColor='#22c55e';
+    stateLabel.innerHTML='💪 <span style="color:#22c55e">TRABAJANDO</span> · '+min+' min';
+    stateContent.innerHTML=`<div class="current-task-name" style="margin-top:6px">${t.text}</div>${t.step?`<div class="current-task-step">→ ${t.step}</div>`:''}`;
+    stateTimer.style.display='none';
+    stateActions.innerHTML=`
+      <button class="btn-primary" onclick="completarActual()" style="background:linear-gradient(135deg,#22c55e,#16a34a);margin-top:12px">✅ COMPLETAR TAREA</button>
+      <button class="btn-secondary" onclick="openDistract()" style="border-color:#3a1010;color:#ef4444;margin-top:8px">🛑 Me distrajé / Necesito descanso</button>
+    `;
   } else {
-    S.cur=null;
-    el.innerHTML='<div class="no-task">Sin tarea activa — toca el botón de arriba</div>';
+    // IDLE - sin tarea
+    if(S.cur){S.cur=null;}
+    if(mode!=='idle'){S.state={mode:'idle',start:0,end:0};}
+    stateCard.style.borderColor='#1a3050';
+    stateLabel.innerHTML='📌 <span style="color:#3a6080">SIN TAREA ACTIVA</span>';
+    const pendCount=tasks.filter(x=>!x.done).length;
+    stateContent.innerHTML=`<div style="color:#7eb8f7;font-size:0.88em;text-align:center;margin:8px 0">${pendCount>0?`Tienes ${pendCount} tareas pendientes. Toca una para empezar.`:'¡No tienes tareas! Agrega una nueva.'}</div>`;
+    stateTimer.style.display='none';
+    stateActions.innerHTML=`<button class="btn-primary" onclick="go('tareas')" style="margin-top:8px">📋 Ver mis tareas</button>`;
   }
+
   const cfg=S.cfg;
   if(cfg.notif||Notification.permission==='granted'){
     document.getElementById('notif-card').style.display='none';
   }
   checkMascot();
+}
+
+// Refrescar el estado cada segundo cuando estamos en home
+let homeRefresh=null;
+function startHomeRefresh(){
+  if(homeRefresh) clearInterval(homeRefresh);
+  homeRefresh=setInterval(()=>{
+    if(screen==='inicio') renderHome();
+  },1000);
 }
 
 // ══════════════════════════════
@@ -663,40 +765,69 @@ function calcTask(){
 function openDistract(){
   const t=S.cur?S.tasks.find(x=>x.id===S.cur):null;
   const el=document.getElementById('distract-info');
-  el.innerHTML=t?`<strong>Tu tarea actual:</strong><br>${t.text}${t.step?`<br><span style="color:#60a5fa">→ ${t.step}</span>`:''}`:
+  el.innerHTML=t?`<strong style="color:#7eb8f7">Tu tarea actual:</strong><br>${t.text}${t.step?`<br><span style="color:#60a5fa">→ ${t.step}</span>`:''}`:
     'No tienes tarea activa. ¡Elige una primero!';
   document.getElementById('modal-distract').classList.add('show');
+  playModalAnim('modal-mascot-distract','alerta',95);
   playAnim('alerta');
   setSpeech('¡Alto! Reconocer la distracción ya es el primer paso. ¿Qué decides?');
 }
 function closeDistract(){
   document.getElementById('modal-distract').classList.remove('show');
+  stopModalAnim('modal-mascot-distract');
   playAnim('idle'); setSpeech(idleMsg());
 }
 function volverTrabajo(){
   closeDistract(); S.lastAct=Date.now();
+  // Mantener/reiniciar modo trabajando
+  if(S.cur){
+    S.state={mode:'working',start:Date.now(),end:0};
+    programarCheckin();
+  }
   const t=S.cur?S.tasks.find(x=>x.id===S.cur):null;
   setSpeech(t?`¡Eso! Vuelve a: ${t.step||t.text}`:'¡Volviste! Elige una tarea y a trabajar.');
+  renderHome();
 }
-let breakTimer=null;
-function descanso5(){
+
+// ══════════════════════════════
+// SISTEMA DE DESCANSO
+// ══════════════════════════════
+function openBreak(){
   closeDistract();
-  let s=300; playAnim('dormido');
-  setSpeech('Descanso de 5 minutos. ¡Descansa de verdad!');
-  if(breakTimer) clearInterval(breakTimer);
-  breakTimer=setInterval(()=>{
-    s--;
-    if(s<=0){
-      clearInterval(breakTimer);
-      playAnim('urgente');
-      setSpeech('¡Descanso terminado! ¡Vuelve al trabajo ahora!');
-      showBanner('⏰ Descanso terminado','¡A trabajar! Vuelve a tu tarea.',false);
-      setTimeout(()=>{playAnim('idle');setSpeech(idleMsg())},5000);
-    }
-  },1000);
+  document.getElementById('modal-break').classList.add('show');
+  playModalAnim('modal-mascot-break','dormido',95);
 }
+function closeBreak(){
+  document.getElementById('modal-break').classList.remove('show');
+  stopModalAnim('modal-mascot-break');
+}
+function iniciarDescanso(minutes){
+  closeBreak();
+  const end=Date.now()+minutes*60000;
+  S.state={mode:'resting',start:Date.now(),end:end,duration:minutes};
+  playAnim('dormido');
+  setSpeech(`Descanso de ${minutes<60?minutes+' minutos':'1 hora'}. ¡Aprovecha bien!`);
+  // Programar notificación de fin
+  cancelarTodasNotifs();
+  programarNotif('focus-break-end','⏰ ¡Descanso terminado!',`Han pasado ${minutes} min. ¡Vuelve al trabajo!`,minutes*60000,true);
+  showBanner('☕ Descanso iniciado',`Te avisaré en ${minutes} minutos`,false);
+  renderHome();
+}
+function terminarDescanso(auto){
+  S.state={mode:'idle',start:0,end:0};
+  cancelarTodasNotifs();
+  if(auto){
+    playAnim('urgente');
+    setSpeech('¡Descanso terminado! ¿Volvemos al trabajo?');
+    notificarLocal('⏰ ¡Descanso terminado!','¡Vuelve al trabajo! Toca aquí para abrir Focus.',true);
+  } else {
+    playAnim('idle'); setSpeech('¡Bien! De vuelta a trabajar. Toca una tarea.');
+  }
+  renderHome();
+}
+
 function completarActual(){
-  if(!S.cur){setSpeech('¿Qué completaste? Selecciona tu tarea primero.');return;}
+  if(!S.cur){setSpeech('Selecciona una tarea primero — toca en "Tareas".');return;}
   toggleTask(S.cur);
 }
 
@@ -794,73 +925,118 @@ function clearAll(){
   }
 }
 function testNotif(){
-  showBanner('🤖 Focus activo','¡Las notificaciones están funcionando! Así te interrumpiré.',true);
+  if(Notification.permission!=='granted'){
+    alert('Primero activa las notificaciones desde el botón "Activar notificaciones" en la pantalla de inicio.');
+    return;
+  }
+  // Notificación inmediata
+  notificarLocal('🤖 Focus — Prueba','¡Las notificaciones funcionan con sonido y vibración!',true,true);
+  // Notificación programada en 10 segundos (para probar que funciona aunque cierres la app)
+  programarNotif('focus-test','⏰ Prueba programada','Esta notificación llegó después de 10 segundos. ¡Cierra la app y verás!',10000,true,false);
   playAnim('alerta');
-  setSpeech('¡Así te voy a interrumpir cuando te pierdas!');
-  setTimeout(()=>{playAnim('idle');setSpeech(idleMsg())},4000);
+  setSpeech('¡Te envié una prueba! En 10s llegará otra (puedes cerrar la app para verla).');
+  setTimeout(()=>{playAnim('idle');setSpeech(idleMsg())},5000);
 }
 
 // ══════════════════════════════
-// NOTIFICATIONS
+// NOTIFICATIONS — Sistema mejorado
 // ══════════════════════════════
-let checkinTimer=null;
 async function activarNotif(){
   if(!('Notification' in window)){alert('Tu navegador no soporta notificaciones');return;}
   const p=await Notification.requestPermission();
   if(p==='granted'){
     const cfg=S.cfg; cfg.notif=true; S.cfg=cfg;
     document.getElementById('notif-card').style.display='none';
-    startCheckin();
-    showBanner('✅ ¡Notificaciones activadas!','Focus te cuidará las espaldas.',false);
+    // Probar la notificación inmediatamente para que el usuario confirme que funciona
+    notificarLocal('✅ ¡Notificaciones activadas!','Focus te avisará con sonido cuando estés distraído.',false);
+    showBanner('✅ ¡Notificaciones activadas!','Te avisaré con sonido cuando te pierdas.',false);
+    // Si tiene tarea, programar el check-in
+    if(S.state.mode==='working') programarCheckin();
   } else {
-    alert('Sin permiso. Actívalas en Configuración > Apps > Chrome > Notificaciones');
+    alert('Sin permiso. Actívalas en Configuración del celular > Apps > Chrome > Notificaciones (o instala como app y revisa permisos)');
   }
 }
-function startCheckin(){
-  if(checkinTimer) clearInterval(checkinTimer);
-  const ms=(S.cfg.interval||30)*60*1000;
-  checkinTimer=setInterval(doCheckin,ms);
-  // Programar notificación vía SW para cuando la pantalla esté apagada
-  if('serviceWorker' in navigator && Notification.permission==='granted'){
+
+// Mostrar notificación nativa (con sonido, vibración, etc.)
+function notificarLocal(title, body, urgent, actions){
+  if(Notification.permission!=='granted') return;
+  navigator.serviceWorker.ready.then(reg=>{
+    const opts={
+      body,
+      icon:'./icon-192.png',
+      badge:'./icon-192.png',
+      image:'./sprites/megaman-alerta.png',
+      vibrate:urgent?[300,100,300,100,300,100,500]:[200,100,200],
+      requireInteraction:urgent,
+      silent:false,
+      tag:'focus-checkin',
+      renotify:true,
+      timestamp:Date.now()
+    };
+    if(actions){
+      opts.actions=[
+        {action:'si',title:'✅ Sí, trabajando'},
+        {action:'no',title:'❌ Me perdí'}
+      ];
+    }
+    reg.showNotification(title,opts);
+  }).catch(()=>{
+    // Fallback al banner in-app
+    showBanner(title,body,urgent);
+  });
+}
+
+// ══════════════════════════════
+// PROGRAMACIÓN DE NOTIFICACIONES (incluso cuando app está cerrada)
+// ══════════════════════════════
+function programarNotif(id, title, body, delayMs, urgent, actions){
+  if(Notification.permission!=='granted') return;
+  if('serviceWorker' in navigator){
     navigator.serviceWorker.ready.then(reg=>{
-      reg.active && reg.active.postMessage({type:'SCHEDULE_NOTIF',delay:ms});
+      const ctrl = reg.active || navigator.serviceWorker.controller;
+      if(ctrl){
+        ctrl.postMessage({
+          type:'SCHEDULE',
+          id, title, body, delayMs, urgent, actions: actions||false
+        });
+      }
     }).catch(()=>{});
   }
 }
-function restartCheckin(){startCheckin()}
-function doCheckin(){
-  const la=S.lastAct, min=la?(Date.now()-la)/60000:999;
-  const t=S.cur?S.tasks.find(x=>x.id===S.cur&&!x.done):null;
-  let title,body,urgent;
-  if(min>60){
-    title='🚨 ¡Llevas demasiado tiempo perdido!';
-    body='Más de 1 hora sin productividad. ¡Vuelve ahora!';
-    urgent=true; playAnim('urgente');
-    setSpeech('¡EMERGENCIA! ¡Llevas más de 1 hora sin hacer nada!');
-  } else if(t){
-    title='⚡ Check-in — Focus';
-    body=`¿Sigues trabajando en: "${t.text}"?`;
-    urgent=true; playAnim('alerta');
-    setSpeech(`Check-in: ¿Cómo vas con "${t.text}"?`);
-  } else {
-    title='🤖 Focus — ¿Qué haces?';
-    body='No tienes tarea activa. ¿En qué estás?';
-    urgent=false; playAnim('alerta');
-    setSpeech('¡No hay tarea activa! ¿Qué estás haciendo?');
-  }
-  setTimeout(()=>{if(spCurrent!=='idle'){playAnim('idle');setSpeech(idleMsg())}},12000);
-  // Sistema de notificaciones
-  if(Notification.permission==='granted'){
+
+function cancelarNotif(id){
+  if('serviceWorker' in navigator){
     navigator.serviceWorker.ready.then(reg=>{
-      reg.showNotification(title,{
-        body, icon:'./sprites/megaman-alerta.png',
-        requireInteraction:urgent, tag:'fm-checkin',
-        actions:[{action:'yes',title:'✅ Sí, trabajando'},{action:'no',title:'❌ Me perdí'}]
-      });
-    }).catch(()=>showBanner(title,body,urgent));
-  } else {
-    showBanner(title,body,urgent);
+      const ctrl = reg.active || navigator.serviceWorker.controller;
+      if(ctrl) ctrl.postMessage({type:'CANCEL',id});
+    }).catch(()=>{});
   }
+}
+
+function cancelarTodasNotifs(){
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.ready.then(reg=>{
+      const ctrl = reg.active || navigator.serviceWorker.controller;
+      if(ctrl) ctrl.postMessage({type:'CANCEL_ALL'});
+    }).catch(()=>{});
+  }
+}
+
+// Programar el check-in cíclico (cada X minutos)
+function programarCheckin(){
+  if(Notification.permission!=='granted') return;
+  if(S.state.mode!=='working') return;
+  const t=S.cur?S.tasks.find(x=>x.id===S.cur&&!x.done):null;
+  if(!t) return;
+  const ms=(S.cfg.interval||30)*60*1000;
+  const title='⚡ Check-in — Focus';
+  const body=`¿Sigues con: "${t.text}"? Toca para responder.`;
+  programarNotif('focus-checkin', title, body, ms, true, true);
+}
+
+function restartCheckin(){
+  cancelarNotif('focus-checkin');
+  programarCheckin();
 }
 
 // ══════════════════════════════
@@ -952,10 +1128,32 @@ if('serviceWorker' in navigator){
     }
   }).catch(()=>{});
   navigator.serviceWorker.addEventListener('message',e=>{
-    if(e.data==='yes'||e.data?.type==='checkin_ok') bannerYes();
-    if(e.data==='no'||e.data?.type==='checkin_no') bannerNo();
+    const d=e.data;
+    if(d?.type==='checkin_ok'){ bannerYes(); }
+    else if(d?.type==='checkin_no'){ bannerNo(); }
+    else if(d?.type==='scheduled_fired'){
+      // El SW intentó disparar una notif pero estamos en primer plano
+      showBanner(d.title,d.body,d.id==='focus-checkin');
+      playAnim('alerta');
+    }
   });
 }
+
+// ══════════════════════════════
+// VISIBILITY - Cuando la app se va a background, programar notif
+// ══════════════════════════════
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){
+    // Usuario salió de la app - asegurar que el check-in esté programado
+    if(S.state.mode==='working' && Notification.permission==='granted'){
+      programarCheckin();
+    }
+  } else {
+    // Usuario volvió - cancelar el check-in pendiente (ya está aquí)
+    if(S.state.mode==='working') cancelarNotif('focus-checkin');
+    renderHome();
+  }
+});
 
 // ══════════════════════════════
 // INIT
@@ -965,9 +1163,16 @@ function init(){
   playAnim('idle');
   setSpeech(idleMsg());
   renderHome();
+  startHomeRefresh();
   updTimer();
   const cfg=S.cfg;
-  if(cfg.notif&&Notification.permission==='granted') startCheckin();
+  // Si veníamos de un estado activo, restaurar
+  const state=S.state;
+  if(state.mode==='resting' && state.end<=Date.now()){
+    terminarDescanso(true);
+  } else if(state.mode==='working' && cfg.notif && Notification.permission==='granted'){
+    programarCheckin();
+  }
   setInterval(()=>{if(screen==='inicio')checkMascot()},5*60*1000);
 }
 init();
