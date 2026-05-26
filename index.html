@@ -328,7 +328,26 @@ select option{background:#080f1e}
         <div class="stat-card"><div class="stat-val" id="ss-streak">0</div><div class="stat-lbl">🔥 Racha</div></div>
         <div class="stat-card"><div class="stat-val" id="ss-comp">0</div><div class="stat-lbl">✅ Hechas hoy</div></div>
         <div class="stat-card"><div class="stat-val" id="ss-foco">0m</div><div class="stat-lbl">⏱️ Enfocado hoy</div></div>
-        <div class="stat-card"><div class="stat-val" id="ss-pend">0</div><div class="stat-lbl">📋 Pendientes</div></div>
+        <div class="stat-card"><div class="stat-val" id="ss-distr" style="color:#ef4444">0</div><div class="stat-lbl">🛑 Distracciones</div></div>
+      </div>
+
+      <!-- Objetivo diario -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div class="card-label">🎯 Objetivo diario</div>
+          <select id="sel-objetivo" onchange="saveObjetivo()" style="width:auto;padding:5px 8px;font-size:0.78em;background:#080f1e;border:1px solid #1a3050;color:#e2e8f0;border-radius:6px">
+            <option value="30">30 min</option>
+            <option value="60">1 hora</option>
+            <option value="120" selected>2 horas</option>
+            <option value="180">3 horas</option>
+            <option value="240">4 horas</option>
+            <option value="360">6 horas</option>
+          </select>
+        </div>
+        <div style="background:#0a1525;border-radius:10px;height:14px;overflow:hidden;position:relative">
+          <div id="obj-bar" style="height:100%;background:linear-gradient(90deg,#22c55e,#a78bfa);transition:width 1s;width:0%"></div>
+        </div>
+        <div id="obj-text" style="text-align:center;font-size:0.78em;color:#7eb8f7;margin-top:6px">0m de 2h</div>
       </div>
 
       <!-- Tareas con tiempo -->
@@ -341,8 +360,9 @@ select option{background:#080f1e}
       <div class="card">
         <div class="card-label">🔔 Notificaciones</div>
         <div id="notif-section"></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin:12px 0 10px">
-          <span style="font-size:0.85em;color:#7eb8f7">Check-in cada:</span>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 10px">
+          <span style="font-size:0.85em;color:#7eb8f7">Check-in (¿sigues?) cada:</span>
           <select id="sel-interval" onchange="saveInterval()" style="width:auto;padding:7px 12px;font-size:0.85em">
             <option value="15">15 minutos</option>
             <option value="30" selected>30 minutos</option>
@@ -350,6 +370,42 @@ select option{background:#080f1e}
             <option value="60">1 hora</option>
           </select>
         </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0">
+          <span style="font-size:0.85em;color:#7eb8f7">💓 Pulso de vibración cada:</span>
+          <select id="sel-pulse" onchange="savePulse()" style="width:auto;padding:7px 12px;font-size:0.85em">
+            <option value="3">3 minutos</option>
+            <option value="5" selected>5 minutos</option>
+            <option value="10">10 minutos</option>
+            <option value="15">15 minutos</option>
+            <option value="0">Desactivado</option>
+          </select>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0;padding:10px;background:#1a0505;border:1px solid #3a1010;border-radius:8px">
+          <div>
+            <div style="font-size:0.85em;color:#fca5a5;font-weight:700">🚨 Modo INVASIVO</div>
+            <div style="font-size:0.7em;color:#f87171;margin-top:2px">Alertas escalonadas cuando sales de Focus</div>
+          </div>
+          <label style="position:relative;width:48px;height:26px;cursor:pointer">
+            <input type="checkbox" id="chk-invasivo" onchange="saveInvasivo()" style="opacity:0;width:0;height:0">
+            <span id="sw-invasivo" style="position:absolute;inset:0;background:#0a1525;border-radius:13px;transition:0.2s"></span>
+            <span id="sw-invasivo-knob" style="position:absolute;top:3px;left:3px;width:20px;height:20px;background:white;border-radius:50%;transition:0.2s"></span>
+          </label>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0;padding:10px;background:#0a1525;border:1px solid #1a3050;border-radius:8px">
+          <div>
+            <div style="font-size:0.85em;color:#a78bfa;font-weight:700">💡 Mantener pantalla encendida</div>
+            <div style="font-size:0.7em;color:#7eb8f7;margin-top:2px">No se apaga la pantalla mientras trabajas</div>
+          </div>
+          <label style="position:relative;width:48px;height:26px;cursor:pointer">
+            <input type="checkbox" id="chk-wakelock" onchange="saveWakeLock()" style="opacity:0;width:0;height:0">
+            <span id="sw-wakelock" style="position:absolute;inset:0;background:#0a1525;border-radius:13px;transition:0.2s;border:1px solid #1a3050"></span>
+            <span id="sw-wakelock-knob" style="position:absolute;top:3px;left:3px;width:20px;height:20px;background:white;border-radius:50%;transition:0.2s"></span>
+          </label>
+        </div>
+
         <button class="btn-primary" onclick="testNotif()" style="padding:10px;font-size:0.85em;background:linear-gradient(135deg,#22c55e,#16a34a)">🔔 Probar notificación (con sonido)</button>
       </div>
 
@@ -506,9 +562,9 @@ function setSpeech(t){ document.getElementById('mascot-speech').textContent=t; }
 const S={
   get tasks(){return JSON.parse(localStorage.getItem('fm_t')||'[]')},
   set tasks(v){localStorage.setItem('fm_t',JSON.stringify(v))},
-  get cfg(){return JSON.parse(localStorage.getItem('fm_c')||'{"interval":30,"notif":false}')},
+  get cfg(){return JSON.parse(localStorage.getItem('fm_c')||'{"interval":30,"notif":false,"pulse":5,"invasivo":true,"wakeLock":true,"objetivoMin":120}')},
   set cfg(v){localStorage.setItem('fm_c',JSON.stringify(v))},
-  get stats(){return JSON.parse(localStorage.getItem('fm_s')||'{"streak":0,"date":null,"comp":0,"focoMs":0}')},
+  get stats(){return JSON.parse(localStorage.getItem('fm_s')||'{"streak":0,"date":null,"comp":0,"focoMs":0,"distracciones":0}')},
   set stats(v){localStorage.setItem('fm_s',JSON.stringify(v))},
   get cur(){return localStorage.getItem('fm_cur')||null},
   set cur(v){v?localStorage.setItem('fm_cur',v):localStorage.removeItem('fm_cur')},
@@ -686,6 +742,8 @@ function comenzarTarea(){
     iniciarNotifProgreso(t.text);
   }
   programarCheckin();
+  iniciarPulso();
+  adquirirWakeLock();
   renderHome();
 }
 
@@ -695,6 +753,9 @@ function pausarTarea(){
   S.state={mode:'paused'};
   cancelarTodasNotifs();
   detenerNotifProgreso();
+  detenerPulso();
+  detenerDistraccionWatch();
+  liberarWakeLock();
   playAnim('dormido');
   setSpeech('Pausado. ¡Cuando puedas, sigue! Tu tiempo está guardado.');
   renderHome();
@@ -710,6 +771,8 @@ function continuarTarea(){
     iniciarNotifProgreso(t.text);
   }
   programarCheckin();
+  iniciarPulso();
+  adquirirWakeLock();
   renderHome();
 }
 
@@ -771,6 +834,9 @@ function completarTareaSpecific(id){
     S.state={mode:'idle'};
     cancelarTodasNotifs();
     detenerNotifProgreso();
+    detenerPulso();
+    detenerDistraccionWatch();
+    liberarWakeLock();
   }
   const st=S.stats;
   st.comp=(st.comp||0)+1;
@@ -790,6 +856,9 @@ function cambiarTarea(){
   S.state={mode:'idle'};
   cancelarTodasNotifs();
   detenerNotifProgreso();
+  detenerPulso();
+  detenerDistraccionWatch();
+  liberarWakeLock();
   playAnim('idle'); setSpeech(idleMsg());
   go('tareas');
 }
@@ -1068,7 +1137,13 @@ function closeBreak(){
 function iniciarDescanso(minutes){
   closeBreak();
   // Pausar trabajo si está en curso
-  if(S.state.mode==='working'){guardarSesion();detenerNotifProgreso();}
+  if(S.state.mode==='working'){
+    guardarSesion();
+    detenerNotifProgreso();
+    detenerPulso();
+    detenerDistraccionWatch();
+    liberarWakeLock();
+  }
   const end=Date.now()+minutes*60000;
   // Guardar la tarea actual para volver
   const savedCur=S.cur;
@@ -1113,8 +1188,31 @@ function renderStats(){
   document.getElementById('ss-streak').textContent=st.streak;
   document.getElementById('ss-comp').textContent=st.comp||0;
   document.getElementById('ss-foco').textContent=formatTime(focoLive());
-  document.getElementById('ss-pend').textContent=tasks.filter(t=>!t.done).length;
+  document.getElementById('ss-distr').textContent=st.distracciones||0;
   document.getElementById('sel-interval').value=cfg.interval||30;
+  document.getElementById('sel-pulse').value=String(cfg.pulse??5);
+  document.getElementById('sel-objetivo').value=String(cfg.objetivoMin||120);
+
+  // Objetivo diario
+  const objMs=(cfg.objetivoMin||120)*60000;
+  const focoMs=focoLive();
+  const pct=Math.min(100,Math.round(focoMs/objMs*100));
+  document.getElementById('obj-bar').style.width=pct+'%';
+  const objH=Math.floor((cfg.objetivoMin||120)/60),objM=(cfg.objetivoMin||120)%60;
+  const objStr=objH>0?objH+'h'+(objM?' '+objM+'m':''):objM+'m';
+  document.getElementById('obj-text').textContent=`${formatTime(focoMs)} de ${objStr} (${pct}%)`;
+  if(pct>=100){document.getElementById('obj-text').innerHTML+=' 🎉';}
+
+  // Toggle switches
+  const invasivo=cfg.invasivo!==false;
+  document.getElementById('chk-invasivo').checked=invasivo;
+  document.getElementById('sw-invasivo').style.background=invasivo?'#ef4444':'#0a1525';
+  document.getElementById('sw-invasivo-knob').style.left=invasivo?'25px':'3px';
+
+  const wl=cfg.wakeLock!==false;
+  document.getElementById('chk-wakelock').checked=wl;
+  document.getElementById('sw-wakelock').style.background=wl?'#7c3aed':'#0a1525';
+  document.getElementById('sw-wakelock-knob').style.left=wl?'25px':'3px';
 
   // Historial de tareas con tiempo (hoy)
   const today=new Date().setHours(0,0,0,0);
@@ -1156,6 +1254,27 @@ function renderStats(){
 function saveInterval(){
   const cfg=S.cfg; cfg.interval=parseInt(document.getElementById('sel-interval').value);
   S.cfg=cfg; restartCheckin();
+}
+function savePulse(){
+  const cfg=S.cfg; cfg.pulse=parseInt(document.getElementById('sel-pulse').value);
+  S.cfg=cfg;
+  detenerPulso();
+  if(cfg.pulse>0 && S.state.mode==='working') iniciarPulso();
+}
+function saveInvasivo(){
+  const cfg=S.cfg; cfg.invasivo=document.getElementById('chk-invasivo').checked;
+  S.cfg=cfg; renderStats();
+}
+function saveWakeLock(){
+  const cfg=S.cfg; cfg.wakeLock=document.getElementById('chk-wakelock').checked;
+  S.cfg=cfg;
+  if(cfg.wakeLock && S.state.mode==='working') adquirirWakeLock();
+  else liberarWakeLock();
+  renderStats();
+}
+function saveObjetivo(){
+  const cfg=S.cfg; cfg.objetivoMin=parseInt(document.getElementById('sel-objetivo').value);
+  S.cfg=cfg; renderStats();
 }
 function resetDay(){
   if(!confirm('¿Resetear las estadísticas de hoy?')) return;
@@ -1279,6 +1398,68 @@ function detenerNotifProgreso(){
       const ctrl=reg.active||navigator.serviceWorker.controller;
       if(ctrl) ctrl.postMessage({type:'PROGRESS_STOP'});
     }).catch(()=>{});
+  }
+}
+
+// ══════════════════════════════════════════════
+// PULSO cada X minutos (vibración + mini notif)
+// ══════════════════════════════════════════════
+function iniciarPulso(){
+  if(Notification.permission!=='granted') return;
+  navigator.serviceWorker.ready.then(reg=>{
+    const ctrl=reg.active||navigator.serviceWorker.controller;
+    if(ctrl) ctrl.postMessage({type:'PULSE_START',intervalMin:S.cfg.pulse||5});
+  }).catch(()=>{});
+}
+function detenerPulso(){
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.ready.then(reg=>{
+      const ctrl=reg.active||navigator.serviceWorker.controller;
+      if(ctrl) ctrl.postMessage({type:'PULSE_STOP'});
+    }).catch(()=>{});
+  }
+}
+
+// ══════════════════════════════════════════════
+// DETECCIÓN DE DISTRACCIÓN ESCALADA
+// ══════════════════════════════════════════════
+function iniciarDistraccionWatch(){
+  if(Notification.permission!=='granted') return;
+  if(!S.cfg.invasivo) return;
+  const t=S.cur?S.tasks.find(x=>x.id===S.cur):null;
+  navigator.serviceWorker.ready.then(reg=>{
+    const ctrl=reg.active||navigator.serviceWorker.controller;
+    if(ctrl) ctrl.postMessage({
+      type:'DISTRACTION_START',
+      taskText:t?t.text:'tu tarea'
+    });
+  }).catch(()=>{});
+}
+function detenerDistraccionWatch(){
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.ready.then(reg=>{
+      const ctrl=reg.active||navigator.serviceWorker.controller;
+      if(ctrl) ctrl.postMessage({type:'DISTRACTION_STOP'});
+    }).catch(()=>{});
+  }
+}
+
+// ══════════════════════════════════════════════
+// WAKE LOCK (mantener pantalla encendida)
+// ══════════════════════════════════════════════
+let wakeLock=null;
+async function adquirirWakeLock(){
+  if(!('wakeLock' in navigator)) return;
+  if(!S.cfg.wakeLock) return;
+  try{
+    wakeLock=await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release',()=>{wakeLock=null;});
+  }catch(err){}
+}
+async function liberarWakeLock(){
+  if(wakeLock){
+    try{await wakeLock.release();}catch(e){}
+    wakeLock=null;
   }
 }
 
@@ -1415,13 +1596,27 @@ if('serviceWorker' in navigator){
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden){
     // Guardar lo trabajado por si se cierra la app
-    if(S.state.mode==='working') flushSesion();
-    if(S.state.mode==='working' && Notification.permission==='granted'){
-      programarCheckin();
+    if(S.state.mode==='working'){
+      flushSesion();
+      // Contar como distracción
+      const st=S.stats;
+      st.distracciones=(st.distracciones||0)+1;
+      S.stats=st;
+      // Activar watch de distracción (notifs escalonadas)
+      if(Notification.permission==='granted'){
+        iniciarDistraccionWatch();
+        programarCheckin();
+      }
     }
   } else {
-    if(S.state.mode==='working') cancelarNotif('focus-checkin');
+    if(S.state.mode==='working'){
+      cancelarNotif('focus-checkin');
+      detenerDistraccionWatch();
+      // Re-adquirir wake lock (se libera al ocultar la página)
+      adquirirWakeLock();
+    }
     if(screen==='inicio') renderHome();
+    if(screen==='stats') renderStats();
     updateNotifPill();
   }
 });
@@ -1459,6 +1654,8 @@ function init(){
     iniciarNotifDescanso(Math.ceil(remaining/60000));
   } else if(state.mode==='working' && Notification.permission==='granted'){
     programarCheckin();
+    iniciarPulso();
+    adquirirWakeLock();
     // Restaurar notif persistente del cronómetro
     const t=S.cur?S.tasks.find(x=>x.id===S.cur):null;
     if(t) iniciarNotifProgreso(t.text);
