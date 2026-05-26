@@ -681,7 +681,10 @@ function comenzarTarea(){
   S.state={mode:'working',start:Date.now(),sessionStart:Date.now()};
   playAnim('idle');
   const t=S.tasks.find(x=>x.id===S.cur);
-  if(t) setSpeech(`¡VAMOS! Trabajando en: ${t.step||t.text}. ¡Foco total! 🔥`);
+  if(t){
+    setSpeech(`¡VAMOS! Trabajando en: ${t.step||t.text}. ¡Foco total! 🔥`);
+    iniciarNotifProgreso(t.text);
+  }
   programarCheckin();
   renderHome();
 }
@@ -691,6 +694,7 @@ function pausarTarea(){
   guardarSesion();
   S.state={mode:'paused'};
   cancelarTodasNotifs();
+  detenerNotifProgreso();
   playAnim('dormido');
   setSpeech('Pausado. ¡Cuando puedas, sigue! Tu tiempo está guardado.');
   renderHome();
@@ -701,7 +705,10 @@ function continuarTarea(){
   S.state={mode:'working',start:Date.now(),sessionStart:Date.now()};
   playAnim('idle');
   const t=S.tasks.find(x=>x.id===S.cur);
-  if(t) setSpeech(`De vuelta a: ${t.text}. ¡Tú puedes! 💪`);
+  if(t){
+    setSpeech(`De vuelta a: ${t.text}. ¡Tú puedes! 💪`);
+    iniciarNotifProgreso(t.text);
+  }
   programarCheckin();
   renderHome();
 }
@@ -723,6 +730,28 @@ function guardarSesion(){
   S.stats=st;
 }
 
+// Flush periódico: guarda el progreso sin terminar la sesión
+// Esto garantiza que si cierras la app abrupto, no pierdes el tiempo
+function flushSesion(){
+  if(S.state.mode!=='working') return;
+  const elapsed=Date.now()-S.state.sessionStart;
+  if(elapsed<5000) return; // mínimo 5s
+  const tasks=S.tasks;
+  const t=tasks.find(x=>x.id===S.cur);
+  if(t){
+    t.totalMs=(t.totalMs||0)+elapsed;
+    t.sessions=t.sessions||[];
+    t.sessions.push({start:S.state.sessionStart,end:Date.now(),ms:elapsed});
+    S.tasks=tasks;
+  }
+  const st=S.stats;
+  st.focoMs=(st.focoMs||0)+elapsed;
+  S.stats=st;
+  // Reiniciar sessionStart para no doblar
+  const ns={...S.state, sessionStart:Date.now()};
+  S.state=ns;
+}
+
 function completarActual(){
   if(!S.cur){alert('Selecciona una tarea primero');return;}
   completarTareaSpecific(S.cur);
@@ -741,6 +770,7 @@ function completarTareaSpecific(id){
     S.cur=null;
     S.state={mode:'idle'};
     cancelarTodasNotifs();
+    detenerNotifProgreso();
   }
   const st=S.stats;
   st.comp=(st.comp||0)+1;
@@ -759,6 +789,7 @@ function cambiarTarea(){
   S.cur=null;
   S.state={mode:'idle'};
   cancelarTodasNotifs();
+  detenerNotifProgreso();
   playAnim('idle'); setSpeech(idleMsg());
   go('tareas');
 }
@@ -774,11 +805,21 @@ function formatTime(ms){
 // ══════════════════════════════════════════════
 // HOME RENDER
 // ══════════════════════════════════════════════
+function focoLive(){
+  // Tiempo enfocado hoy incluyendo la sesión activa
+  const st=S.stats;
+  let total=st.focoMs||0;
+  if(S.state.mode==='working' && S.state.sessionStart){
+    total+=Date.now()-S.state.sessionStart;
+  }
+  return total;
+}
+
 function renderHome(){
   const st=S.stats, tasks=S.tasks;
   document.getElementById('streak-val').textContent=st.streak;
   document.getElementById('h-comp').textContent=st.comp||0;
-  document.getElementById('h-foco').textContent=formatTime(st.focoMs||0);
+  document.getElementById('h-foco').textContent=formatTime(focoLive());
   document.getElementById('h-pend').textContent=tasks.filter(t=>!t.done).length;
 
   // Notif pill
@@ -1027,7 +1068,7 @@ function closeBreak(){
 function iniciarDescanso(minutes){
   closeBreak();
   // Pausar trabajo si está en curso
-  if(S.state.mode==='working') guardarSesion();
+  if(S.state.mode==='working'){guardarSesion();detenerNotifProgreso();}
   const end=Date.now()+minutes*60000;
   // Guardar la tarea actual para volver
   const savedCur=S.cur;
@@ -1035,13 +1076,17 @@ function iniciarDescanso(minutes){
   playAnim('dormido');
   setSpeech(`Descanso de ${minutes<60?minutes+' minutos':'1 hora'}. ¡Aprovéchalo!`);
   cancelarTodasNotifs();
+  // Notif programada del fin del descanso (con sonido fuerte)
   programarNotif('focus-break-end','⏰ ¡Descanso terminado!',`Pasaron ${minutes} min. ¡Vuelve al trabajo!`,minutes*60000,true,false);
+  // Notif persistente con cuenta regresiva
+  iniciarNotifDescanso(minutes);
   showBanner('☕ Descanso iniciado',`Te avisaré en ${minutes} minutos`,false);
   renderHome();
 }
 function terminarDescanso(auto){
   const returnTo=S.state.returnTo;
   cancelarTodasNotifs();
+  detenerNotifDescanso();
   if(returnTo && S.tasks.find(t=>t.id===returnTo && !t.done)){
     // Restaurar selección
     S.cur=returnTo;
@@ -1067,7 +1112,7 @@ function renderStats(){
   const st=S.stats, tasks=S.tasks, cfg=S.cfg;
   document.getElementById('ss-streak').textContent=st.streak;
   document.getElementById('ss-comp').textContent=st.comp||0;
-  document.getElementById('ss-foco').textContent=formatTime(st.focoMs||0);
+  document.getElementById('ss-foco').textContent=formatTime(focoLive());
   document.getElementById('ss-pend').textContent=tasks.filter(t=>!t.done).length;
   document.getElementById('sel-interval').value=cfg.interval||30;
 
@@ -1214,6 +1259,51 @@ function programarCheckin(){
 function restartCheckin(){cancelarNotif('focus-checkin'); programarCheckin();}
 
 // ══════════════════════════════════════════════
+// NOTIFICACIÓN PERSISTENTE EN LA BARRA (con cronómetro vivo)
+// ══════════════════════════════════════════════
+function iniciarNotifProgreso(taskText){
+  if(Notification.permission!=='granted') return;
+  navigator.serviceWorker.ready.then(reg=>{
+    const ctrl=reg.active||navigator.serviceWorker.controller;
+    if(ctrl) ctrl.postMessage({
+      type:'PROGRESS_START',
+      taskText,
+      startTime:S.state.sessionStart,
+      accumulatedMs:(S.tasks.find(t=>t.id===S.cur)?.totalMs)||0
+    });
+  }).catch(()=>{});
+}
+function detenerNotifProgreso(){
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.ready.then(reg=>{
+      const ctrl=reg.active||navigator.serviceWorker.controller;
+      if(ctrl) ctrl.postMessage({type:'PROGRESS_STOP'});
+    }).catch(()=>{});
+  }
+}
+
+// Notificación persistente del descanso (cuenta regresiva)
+function iniciarNotifDescanso(minutes){
+  if(Notification.permission!=='granted') return;
+  navigator.serviceWorker.ready.then(reg=>{
+    const ctrl=reg.active||navigator.serviceWorker.controller;
+    if(ctrl) ctrl.postMessage({
+      type:'BREAK_START',
+      endTime:Date.now()+minutes*60000,
+      duration:minutes
+    });
+  }).catch(()=>{});
+}
+function detenerNotifDescanso(){
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.ready.then(reg=>{
+      const ctrl=reg.active||navigator.serviceWorker.controller;
+      if(ctrl) ctrl.postMessage({type:'BREAK_STOP'});
+    }).catch(()=>{});
+  }
+}
+
+// ══════════════════════════════════════════════
 // IN-APP BANNER
 // ══════════════════════════════════════════════
 let bannerTimeout=null;
@@ -1308,6 +1398,10 @@ if('serviceWorker' in navigator){
     const d=e.data;
     if(d?.type==='checkin_ok'){bannerYes();}
     else if(d?.type==='checkin_no'){bannerNo();}
+    else if(d?.type==='break_ended'){
+      // El SW terminó el descanso → actualizar UI
+      if(S.state.mode==='resting') terminarDescanso(true);
+    }
     else if(d?.type==='scheduled_fired'){
       showBanner(d.title,d.body,d.id==='focus-checkin');
       playAnim('alerta');
@@ -1320,6 +1414,8 @@ if('serviceWorker' in navigator){
 // ══════════════════════════════════════════════
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden){
+    // Guardar lo trabajado por si se cierra la app
+    if(S.state.mode==='working') flushSesion();
     if(S.state.mode==='working' && Notification.permission==='granted'){
       programarCheckin();
     }
@@ -1329,6 +1425,19 @@ document.addEventListener('visibilitychange',()=>{
     updateNotifPill();
   }
 });
+
+// Flush en cerrar/recargar la página
+window.addEventListener('pagehide',()=>{
+  if(S.state.mode==='working') flushSesion();
+});
+window.addEventListener('beforeunload',()=>{
+  if(S.state.mode==='working') flushSesion();
+});
+
+// Flush periódico cada 30 segundos mientras trabajas
+setInterval(()=>{
+  if(S.state.mode==='working') flushSesion();
+},30000);
 
 // ══════════════════════════════════════════════
 // INIT
@@ -1342,8 +1451,18 @@ function init(){
   updateNotifPill();
   // Restaurar estado
   const state=S.state;
-  if(state.mode==='resting' && state.end<=Date.now()) terminarDescanso(true);
-  else if(state.mode==='working' && Notification.permission==='granted') programarCheckin();
+  if(state.mode==='resting' && state.end<=Date.now()){
+    terminarDescanso(true);
+  } else if(state.mode==='resting' && Notification.permission==='granted'){
+    // Restaurar notif de descanso
+    const remaining=state.end-Date.now();
+    iniciarNotifDescanso(Math.ceil(remaining/60000));
+  } else if(state.mode==='working' && Notification.permission==='granted'){
+    programarCheckin();
+    // Restaurar notif persistente del cronómetro
+    const t=S.cur?S.tasks.find(x=>x.id===S.cur):null;
+    if(t) iniciarNotifProgreso(t.text);
+  }
 }
 init();
 </script>
