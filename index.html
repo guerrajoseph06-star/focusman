@@ -2,190 +2,279 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#7c3aed">
+<meta name="theme-color" content="#0b0a10">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Focus">
 <link rel="apple-touch-icon" href="./icon-192.png">
-<title>Focus - Asistente TDAH</title>
+<title>Focus — Tu coach de concentración</title>
 <style>
+:root{
+  --bg:#0b0a10;
+  --bg2:#13111d;
+  --surface:rgba(255,255,255,0.045);
+  --surface2:rgba(255,255,255,0.07);
+  --border:rgba(255,255,255,0.09);
+  --border2:rgba(255,255,255,0.14);
+  --txt:#f4f3f8;
+  --txt2:#a5a3b6;
+  --txt3:#6b6880;
+  --violet:#8b5cf6;
+  --indigo:#6366f1;
+  --emerald:#10b981;
+  --amber:#f59e0b;
+  --purple:#a855f7;
+  --red:#f43f5e;
+  --cyan:#22d3ee;
+  --grad:linear-gradient(135deg,#8b5cf6,#6366f1);
+  --grad-work:linear-gradient(135deg,#10b981,#059669);
+  --grad-rest:linear-gradient(135deg,#a855f7,#7c3aed);
+  --grad-warn:linear-gradient(135deg,#f59e0b,#d97706);
+  --grad-danger:linear-gradient(135deg,#f43f5e,#be123c);
+}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#050d1f;color:#e2e8f0;user-select:none}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg);
+  color:var(--txt);
+  user-select:none;
+  -webkit-font-smoothing:antialiased;
+}
+/* Fondo con auroras */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(60% 50% at 20% 0%, rgba(139,92,246,0.18), transparent 70%),
+    radial-gradient(55% 45% at 90% 15%, rgba(99,102,241,0.14), transparent 70%),
+    radial-gradient(60% 50% at 50% 100%, rgba(168,85,247,0.10), transparent 70%);
+}
+#app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:480px;margin:0 auto}
+#content{flex:1;overflow-y:auto;padding:14px 16px 96px;scroll-behavior:smooth}
+#content::-webkit-scrollbar{width:0}
 
-#app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;position:relative}
-#content{flex:1;overflow-y:auto;padding:12px 14px 90px}
+/* ░░ HEADER ░░ */
+.app-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-top:6px}
+.brand{display:flex;align-items:center;gap:8px}
+.brand-logo{width:30px;height:30px;border-radius:9px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:1em;box-shadow:0 4px 16px rgba(139,92,246,0.45)}
+.brand-name{font-size:1.25em;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,#fff,#c4b5fd);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.header-right{display:flex;align-items:center;gap:8px}
+.streak-chip{display:flex;align-items:center;gap:4px;background:rgba(245,158,11,0.13);border:1px solid rgba(245,158,11,0.3);color:#fbbf24;padding:5px 11px;border-radius:20px;font-size:0.78em;font-weight:800}
+.notif-dot{width:34px;height:34px;border-radius:11px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.95em;cursor:pointer;position:relative;transition:0.2s}
+.notif-dot.on{border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.1)}
+.notif-dot.off{border-color:rgba(244,63,94,0.4);background:rgba(244,63,94,0.1)}
+.notif-dot.off::after{content:'';position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 0 0 rgba(244,63,94,0.6);animation:ping 1.5s infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(244,63,94,0.5)}70%{box-shadow:0 0 0 7px rgba(244,63,94,0)}100%{box-shadow:0 0 0 0 rgba(244,63,94,0)}}
 
-/* BOTTOM NAV */
-#bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#0a1525;border-top:1px solid #1e3a5f;display:flex;z-index:100}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px;color:#3a6080;font-size:0.62em;cursor:pointer;border:none;background:transparent;gap:2px;transition:color 0.2s;font-family:inherit}
-.nav-btn.active{color:#7c3aed}
-.nav-btn .ni{font-size:1.5em}
-
-/* SCREENS */
-.screen{display:none}
+/* ░░ SCREENS ░░ */
+.screen{display:none;animation:fadeUp 0.35s cubic-bezier(0.2,0.8,0.2,1)}
 .screen.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
-/* HEADER */
-.app-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.app-title{font-size:1.2em;font-weight:800;color:#a78bfa;letter-spacing:-0.5px}
-.streak-badge{background:linear-gradient(135deg,#f59e0b,#d97706);color:white;padding:4px 12px;border-radius:20px;font-size:0.78em;font-weight:700}
+/* ░░ ALERTA ACTIVAR NOTIF ░░ */
+#notif-activate-banner{display:none;background:linear-gradient(135deg,rgba(244,63,94,0.16),rgba(190,18,60,0.1));border:1px solid rgba(244,63,94,0.35);border-radius:18px;padding:15px;margin-bottom:14px;backdrop-filter:blur(12px)}
+.nab-title{font-weight:800;color:#fda4af;font-size:0.95em;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.nab-sub{color:#fb7185;font-size:0.78em;margin-bottom:12px;line-height:1.5}
+.nab-btn{width:100%;background:var(--grad-danger);color:white;border:none;padding:13px;border-radius:13px;font-size:0.92em;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(244,63,94,0.35)}
 
-/* NOTIF STATUS PILL */
-.notif-pill{display:inline-block;background:#0c1a2e;border:1px solid #1a3050;color:#3a6080;padding:4px 10px;border-radius:14px;font-size:0.7em;font-weight:600;cursor:pointer}
-.notif-pill.on{background:#041a0a;border-color:#22c55e;color:#22c55e}
-.notif-pill.off{background:#1a0505;border-color:#ef4444;color:#ef4444}
+/* ░░ MASCOT HERO ░░ */
+#mascot-section{display:flex;flex-direction:column;align-items:center;margin-bottom:16px;gap:12px}
+#mascot-stage{position:relative;width:170px;height:260px;display:flex;align-items:flex-end;justify-content:center;cursor:pointer}
+#mascot-stage::after{content:'';position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:120px;height:26px;background:radial-gradient(ellipse,rgba(139,92,246,0.4),transparent 70%);border-radius:50%;filter:blur(4px)}
+#mascot-glow{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,0.22),transparent 65%);filter:blur(8px);transition:0.5s}
+#mascot-sprite{position:relative;z-index:2;background-repeat:no-repeat;background-position:0 0;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.5))}
+#mascot-speech{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px 18px;font-size:0.85em;text-align:center;max-width:320px;line-height:1.5;color:#cbd5e1;backdrop-filter:blur(12px)}
+#mascot-speech::after{content:'';position:absolute;top:-8px;left:50%;transform:translateX(-50%) rotate(45deg);width:14px;height:14px;background:var(--surface);border-left:1px solid var(--border);border-top:1px solid var(--border)}
 
-/* STICKY NOTIF BANNER */
-#notif-activate-banner{display:none;background:linear-gradient(135deg,#1a0a35,#350a1a);border:2px solid #ef4444;border-radius:12px;padding:12px 14px;margin-bottom:12px;animation:pulseBox 2s infinite}
-@keyframes pulseBox{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.4)}50%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
-.nab-title{font-weight:800;color:#fca5a5;font-size:0.92em;margin-bottom:4px}
-.nab-sub{color:#f87171;font-size:0.75em;margin-bottom:10px;line-height:1.4}
-.nab-btn{width:100%;background:linear-gradient(135deg,#ef4444,#b91c1c);color:white;border:none;padding:11px;border-radius:10px;font-size:0.88em;font-weight:800;cursor:pointer;font-family:inherit}
+/* ░░ STATE CARD (Glass) ░░ */
+.glass{background:var(--surface);border:1px solid var(--border);border-radius:20px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+#state-card{padding:18px;margin-bottom:14px;transition:0.4s;position:relative;overflow:hidden}
+#state-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad);opacity:0;transition:0.4s}
+#state-card.s-working::before{background:var(--grad-work);opacity:1}
+#state-card.s-paused::before{background:var(--grad-warn);opacity:1}
+#state-card.s-resting::before{background:var(--grad-rest);opacity:1}
+#state-card.s-selected::before{background:var(--grad);opacity:1}
+.state-tag{display:inline-flex;align-items:center;gap:6px;font-size:0.7em;font-weight:800;text-transform:uppercase;letter-spacing:1px;padding:5px 12px;border-radius:20px;margin-bottom:12px}
+.st-idle{background:rgba(107,104,128,0.15);color:var(--txt3)}
+.st-working{background:rgba(16,185,129,0.15);color:#34d399}
+.st-paused{background:rgba(245,158,11,0.15);color:#fbbf24}
+.st-resting{background:rgba(168,85,247,0.15);color:#c084fc}
+.st-selected{background:rgba(139,92,246,0.15);color:#a78bfa}
+.task-title{font-size:1.15em;font-weight:800;line-height:1.3;margin-bottom:5px}
+.task-substep{font-size:0.85em;color:var(--cyan);line-height:1.45;margin-bottom:6px;display:flex;gap:6px}
+.task-substep::before{content:'▸';color:var(--violet)}
 
-/* MASCOT */
-#mascot-section{display:flex;flex-direction:column;align-items:center;margin-bottom:12px;gap:8px}
-#mascot-container{width:160px;height:280px;display:flex;align-items:flex-end;justify-content:center;cursor:pointer}
-#mascot-sprite{background-repeat:no-repeat;background-position:0 0}
-#mascot-speech{background:#0d1e35;border:2px solid #1e4a7a;border-radius:14px;padding:10px 16px;font-size:0.82em;text-align:center;max-width:320px;line-height:1.45;color:#a8d5ff;position:relative}
-#mascot-speech::after{content:'';position:absolute;top:-9px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:9px solid #1e4a7a}
+/* Timer ring */
+.ring-wrap{display:flex;justify-content:center;margin:14px 0 6px;position:relative}
+.ring-svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:rgba(255,255,255,0.07);stroke-width:9}
+.ring-fg{fill:none;stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset 1s linear}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-time{font-size:2.1em;font-weight:800;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.ring-label{font-size:0.62em;color:var(--txt3);text-transform:uppercase;letter-spacing:1.5px;margin-top:2px;font-weight:700}
 
-/* STATE CARD */
-#state-card{background:#0c1a2e;border:2px solid #1a3050;border-radius:14px;padding:14px;margin-bottom:12px;transition:border-color 0.3s}
-#state-card.working{border-color:#22c55e;box-shadow:0 0 24px rgba(34,197,94,0.15)}
-#state-card.paused{border-color:#f59e0b;box-shadow:0 0 24px rgba(245,158,11,0.15)}
-#state-card.resting{border-color:#7c3aed;box-shadow:0 0 24px rgba(124,58,237,0.2)}
-#state-card.selected{border-color:#1e90ff;box-shadow:0 0 24px rgba(30,144,255,0.15)}
-.state-label{font-size:0.72em;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.task-name-big{font-size:1.05em;font-weight:800;color:#e2e8f0;margin-bottom:4px;line-height:1.3}
-.task-step-big{font-size:0.85em;color:#60a5fa;line-height:1.4;margin-bottom:8px}
-#big-timer{font-size:3.4em;font-weight:800;text-align:center;letter-spacing:-2px;margin:8px 0 6px;color:#22c55e}
-#big-timer.paused{color:#f59e0b}
-#big-timer.resting{color:#a78bfa}
-.timer-sub{text-align:center;font-size:0.72em;color:#3a6080;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px}
-.btn-action{width:100%;color:white;border:none;padding:14px;border-radius:11px;font-size:0.98em;font-weight:800;cursor:pointer;font-family:inherit;margin-top:8px;letter-spacing:0.3px}
-.btn-start{background:linear-gradient(135deg,#1e6fff,#0052cc)}
-.btn-work{background:linear-gradient(135deg,#22c55e,#16a34a)}
-.btn-pause{background:linear-gradient(135deg,#f59e0b,#d97706)}
-.btn-resume{background:linear-gradient(135deg,#22c55e,#16a34a)}
-.btn-rest{background:linear-gradient(135deg,#7c3aed,#5b21b6)}
-.btn-distract-action{background:#1a0505;color:#ef4444;border:1.5px solid #3a1010}
-.btn-secondary-action{background:transparent;color:#7eb8f7;border:1.5px solid #1e4a7a;padding:11px}
-.btn-action:active{transform:scale(0.98)}
+/* Buttons */
+.btn{width:100%;border:none;border-radius:15px;padding:15px;font-size:0.98em;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:0.2px;transition:transform 0.12s,box-shadow 0.2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:active{transform:scale(0.97)}
+.btn+.btn{margin-top:9px}
+.btn-grad{background:var(--grad);color:#fff;box-shadow:0 8px 24px rgba(99,102,241,0.35)}
+.btn-work{background:var(--grad-work);color:#fff;box-shadow:0 8px 24px rgba(16,185,129,0.3)}
+.btn-rest{background:var(--grad-rest);color:#fff;box-shadow:0 8px 24px rgba(168,85,247,0.3)}
+.btn-warn{background:var(--grad-warn);color:#fff;box-shadow:0 8px 24px rgba(245,158,11,0.3)}
+.btn-ghost{background:var(--surface2);color:var(--txt2);border:1px solid var(--border)}
+.btn-danger-ghost{background:rgba(244,63,94,0.08);color:#fb7185;border:1px solid rgba(244,63,94,0.25)}
+.btn-sm{padding:12px;font-size:0.88em}
 
-/* QUICK STATS */
-.mini-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center}
-.mini-stat-val{font-size:1.5em;font-weight:800}
-.mini-stat-lbl{font-size:0.62em;color:#3a6080;margin-top:2px;text-transform:uppercase;letter-spacing:0.5px}
+/* ¿Qué hago? */
+#btn-quehago{width:100%;background:var(--surface);border:1px solid var(--border2);color:#c4b5fd;padding:13px;border-radius:15px;font-size:0.9em;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px;transition:0.2s}
+#btn-quehago:active{transform:scale(0.98);background:var(--surface2)}
 
-/* CARDS */
-.card{background:#0c1a2e;border:1px solid #1a3050;border-radius:12px;padding:14px;margin-bottom:10px}
-.card-label{font-size:0.68em;color:#3a6080;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:700}
+/* ░░ MINI STATS ░░ */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat-pill{padding:14px 8px;text-align:center;border-radius:16px}
+.sp-val{font-size:1.5em;font-weight:800;letter-spacing:-0.5px;font-variant-numeric:tabular-nums}
+.sp-lbl{font-size:0.62em;color:var(--txt3);margin-top:3px;text-transform:uppercase;letter-spacing:0.5px;font-weight:700}
 
-/* TASKS */
-.section-title{font-size:0.75em;font-weight:800;color:#3a6080;text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px;display:flex;align-items:center;gap:8px}
-.task-item{background:#0c1a2e;border:1.5px solid #1a3050;border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:all 0.15s;position:relative}
-.task-item:active{transform:scale(0.99)}
-.task-item.selected{border-color:#1e90ff;background:#0a1a35;box-shadow:0 0 12px rgba(30,144,255,0.2)}
-.task-item.working{border-color:#22c55e;background:#041a0a}
-.task-item.paused{border-color:#f59e0b;background:#1a1305}
-.task-item.done{opacity:0.6;cursor:default}
-.task-row{display:flex;align-items:flex-start;gap:10px}
-.task-check{width:24px;height:24px;border-radius:50%;border:2px solid #3a6080;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:1px;font-size:0.7em;transition:all 0.2s}
-.task-check.done{background:#22c55e;border-color:#22c55e;color:white}
-.task-info{flex:1;min-width:0}
-.task-name{font-size:0.92em;font-weight:700;color:#e2e8f0;margin-bottom:3px}
-.task-name.done-text{text-decoration:line-through;color:#3a6080}
-.task-step{font-size:0.78em;color:#60a5fa;margin-bottom:5px}
-.task-meta{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
-.tag{font-size:0.62em;padding:2px 8px;border-radius:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px}
-.tag-alto{background:#2a0505;color:#ef4444}
-.tag-medio{background:#2a1a00;color:#f59e0b}
-.tag-bajo{background:#041a0a;color:#22c55e}
-.tag-sel{background:#0a1a35;color:#60a5fa;border:1px solid #1e90ff}
-.tag-work{background:#041a0a;color:#22c55e;border:1px solid #22c55e;animation:blink 1.5s infinite}
-.tag-paused{background:#1a1305;color:#f59e0b;border:1px solid #f59e0b}
-.tag-time{background:#0a1525;color:#7eb8f7;font-weight:600}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.5}}
-.btn-del{background:transparent;border:none;color:#2a4060;cursor:pointer;font-size:0.95em;padding:4px;flex-shrink:0}
-.empty-state{text-align:center;padding:40px 20px}
-.empty-state .ee{font-size:3.5em;display:block;margin-bottom:12px}
-.empty-state p{color:#3a6080;font-size:0.88em;line-height:1.6}
+/* ░░ SECTION TITLE ░░ */
+.sec-title{font-size:0.72em;font-weight:800;color:var(--txt3);text-transform:uppercase;letter-spacing:1.2px;margin:18px 4px 10px;display:flex;align-items:center;gap:8px}
 
-/* FORM */
-.form-group{margin-bottom:14px}
-label{display:block;font-size:0.78em;color:#3a6080;margin-bottom:5px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
-input[type="text"],select{width:100%;background:#080f1e;border:1.5px solid #1a3050;border-radius:9px;padding:11px 13px;color:#e2e8f0;font-size:0.9em;font-family:inherit;outline:none;-webkit-appearance:none}
-input:focus,select:focus{border-color:#7c3aed}
-select option{background:#080f1e}
-.energy-btns{display:flex;gap:8px}
-.ebtn{flex:1;padding:10px 6px;border-radius:9px;border:2px solid #1a3050;background:transparent;color:#e2e8f0;cursor:pointer;text-align:center;font-size:0.82em;font-weight:700;font-family:inherit;transition:all 0.15s}
-.ebtn.sel-alto{border-color:#ef4444;background:#2a0505;color:#ef4444}
-.ebtn.sel-medio{border-color:#f59e0b;background:#2a1a00;color:#f59e0b}
-.ebtn.sel-bajo{border-color:#22c55e;background:#041a0a;color:#22c55e}
-.btn-primary{width:100%;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;border:none;padding:13px;border-radius:10px;font-size:0.95em;font-weight:800;cursor:pointer;font-family:inherit;margin-top:4px}
-.btn-secondary{width:100%;background:transparent;color:#3a6080;border:1.5px solid #1a3050;padding:11px;border-radius:10px;font-size:0.88em;cursor:pointer;margin-top:8px;font-family:inherit}
+/* ░░ TASK CARDS ░░ */
+.task-card{padding:14px 16px;margin-bottom:10px;border-radius:18px;cursor:pointer;transition:0.18s;position:relative;overflow:hidden}
+.task-card:active{transform:scale(0.985)}
+.task-card.tc-selected{border-color:rgba(139,92,246,0.5);background:rgba(139,92,246,0.07)}
+.task-card.tc-working{border-color:rgba(16,185,129,0.45);background:rgba(16,185,129,0.06)}
+.task-card.tc-paused{border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.05)}
+.task-card.tc-done{opacity:0.5}
+.tc-row{display:flex;align-items:flex-start;gap:12px}
+.tc-check{width:26px;height:26px;border-radius:50%;border:2px solid var(--txt3);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:1px;font-size:0.75em;transition:0.2s}
+.tc-check.done{background:var(--grad-work);border-color:transparent;color:#fff}
+.tc-body{flex:1;min-width:0}
+.tc-name{font-size:0.95em;font-weight:700;margin-bottom:3px;line-height:1.3}
+.tc-name.done{text-decoration:line-through;color:var(--txt3)}
+.tc-step{font-size:0.78em;color:var(--cyan);margin-bottom:7px;line-height:1.4}
+.tc-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chip{font-size:0.62em;padding:3px 9px;border-radius:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.3px}
+.chip-alto{background:rgba(244,63,94,0.15);color:#fb7185}
+.chip-medio{background:rgba(245,158,11,0.15);color:#fbbf24}
+.chip-bajo{background:rgba(16,185,129,0.15);color:#34d399}
+.chip-time{background:rgba(255,255,255,0.06);color:var(--txt2)}
+.chip-state{background:rgba(139,92,246,0.18);color:#c4b5fd;border:1px solid rgba(139,92,246,0.3)}
+.chip-work{background:rgba(16,185,129,0.18);color:#34d399;border:1px solid rgba(16,185,129,0.3);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.55}}
+.tc-del{background:transparent;border:none;color:var(--txt3);cursor:pointer;font-size:1em;padding:4px;flex-shrink:0;opacity:0.6}
 
-/* STATS */
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-.stat-card{background:#0c1a2e;border:1px solid #1a3050;border-radius:11px;padding:16px;text-align:center}
-.stat-val{font-size:2em;font-weight:800;color:#a78bfa}
-.stat-lbl{font-size:0.68em;color:#3a6080;margin-top:4px;text-transform:uppercase;letter-spacing:0.5px}
-.task-history{background:#0a1525;border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;gap:10px}
-.th-name{font-size:0.82em;color:#e2e8f0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.th-time{font-size:0.78em;color:#22c55e;font-weight:700;flex-shrink:0}
-.th-time.pending{color:#f59e0b}
+.empty{text-align:center;padding:50px 24px}
+.empty-emoji{font-size:3.2em;display:block;margin-bottom:14px;opacity:0.8}
+.empty p{color:var(--txt3);font-size:0.9em;line-height:1.6}
 
-/* DEMO MASCOT */
-.demo-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px}
-.demo-btn{padding:8px 4px;border-radius:8px;background:#0a1525;border:1px solid #1a3050;color:#7eb8f7;font-size:0.7em;font-weight:600;cursor:pointer;font-family:inherit}
-.demo-btn:active{background:#1a0a35;border-color:#7c3aed}
+/* ░░ FORM ░░ */
+.field{margin-bottom:16px}
+.field label{display:block;font-size:0.74em;color:var(--txt3);margin-bottom:7px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px}
+.input,select.input{width:100%;background:rgba(0,0,0,0.25);border:1px solid var(--border);border-radius:13px;padding:13px 15px;color:var(--txt);font-size:0.92em;font-family:inherit;outline:none;transition:0.2s}
+.input:focus{border-color:var(--violet);box-shadow:0 0 0 3px rgba(139,92,246,0.15)}
+select.input option{background:#1a1825}
+.seg{display:flex;gap:8px}
+.seg-btn{flex:1;padding:12px 6px;border-radius:13px;border:1px solid var(--border);background:transparent;color:var(--txt);cursor:pointer;text-align:center;font-size:0.82em;font-weight:700;font-family:inherit;transition:0.15s}
+.seg-btn.sel-alto{border-color:var(--red);background:rgba(244,63,94,0.12);color:#fb7185}
+.seg-btn.sel-medio{border-color:var(--amber);background:rgba(245,158,11,0.12);color:#fbbf24}
+.seg-btn.sel-bajo{border-color:var(--emerald);background:rgba(16,185,129,0.12);color:#34d399}
 
-/* MODALS */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(5,13,31,0.55);backdrop-filter:blur(4px);z-index:200;align-items:flex-end;justify-content:center}
-.modal-overlay.show{display:flex}
-.modal-sheet{background:#0a1525;border-radius:22px 22px 0 0;border-top:2px solid #1e4a7a;padding:22px 18px 44px;width:100%;max-width:480px;box-shadow:0 -10px 40px rgba(0,0,0,0.7);max-height:85vh;overflow-y:auto}
-.modal-mascot{display:flex;justify-content:center;margin:-55px 0 8px}
-.modal-mascot-spr{background-repeat:no-repeat;background-position:0 0}
-.modal-title{font-size:1.15em;font-weight:800;color:#e2e8f0;margin-bottom:5px;text-align:center}
-.modal-sub{font-size:0.85em;color:#7eb8f7;margin-bottom:16px;line-height:1.5;text-align:center}
-.distract-reminder{background:#0d1e35;border:1px solid #1e4a7a;border-radius:10px;padding:12px;margin-bottom:16px;font-size:0.88em;color:#a8d5ff;line-height:1.5}
-.distract-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.quick-btn{padding:14px 10px;border-radius:11px;border:none;font-size:0.85em;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;font-family:inherit}
-.quick-btn .qe{font-size:1.6em}
-.btn-complete{background:#041a0f;color:#22c55e;border:1.5px solid #22c55e}
-.break-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-.break-opt{padding:14px 8px;border-radius:11px;border:2px solid #1a3050;background:#0d1e35;color:#e2e8f0;cursor:pointer;font-size:0.85em;font-weight:700;font-family:inherit;text-align:center;transition:all 0.15s}
-.break-opt:active{transform:scale(0.96);border-color:#7c3aed;background:#1a0a35}
-.break-opt .bo-val{font-size:1.5em;display:block;margin-bottom:2px;font-weight:800;color:#a78bfa}
-.break-opt .bo-lbl{font-size:0.72em;color:#3a6080}
+/* ░░ STATS ░░ */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:14px}
+.stat-card{padding:18px;text-align:center;border-radius:18px}
+.stat-card .v{font-size:2em;font-weight:800;letter-spacing:-1px;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.stat-card .v.red{background:var(--grad-danger);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.stat-card .l{font-size:0.68em;color:var(--txt3);margin-top:5px;text-transform:uppercase;letter-spacing:0.5px;font-weight:700}
+.card{padding:16px;margin-bottom:12px;border-radius:18px}
+.card-h{font-size:0.7em;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:10px}
 
-/* IN-APP NOTIFICATION */
-#notif-banner{display:none;position:fixed;top:10px;left:10px;right:10px;max-width:calc(480px - 20px);margin:0 auto;background:#0d1e35;border:1.5px solid #7c3aed;border-radius:14px;padding:13px 14px;z-index:300;box-shadow:0 6px 30px rgba(0,0,0,0.6);animation:slideIn 0.3s ease}
-@keyframes slideIn{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}}
-.nb-row{display:flex;align-items:center;gap:10px}
-.nb-icon{font-size:2em;flex-shrink:0}
-.nb-text{flex:1}
-.nb-title{font-weight:700;color:#e2e8f0;font-size:0.88em;margin-bottom:2px}
-.nb-body{color:#a8d5ff;font-size:0.8em;line-height:1.4}
-.nb-close{background:none;border:none;color:#3a6080;cursor:pointer;font-size:1.2em;flex-shrink:0}
-.nb-actions{display:flex;gap:8px;margin-top:10px}
-.nb-btn{flex:1;padding:8px;border-radius:8px;border:none;font-size:0.8em;font-weight:700;cursor:pointer;font-family:inherit}
-.nb-yes{background:#041a0a;color:#22c55e;border:1px solid #22c55e}
-.nb-no{background:#1a0505;color:#ef4444;border:1px solid #ef4444}
+.goal-bar{background:rgba(0,0,0,0.3);border-radius:12px;height:16px;overflow:hidden;position:relative}
+.goal-fill{height:100%;background:var(--grad);border-radius:12px;transition:width 1s cubic-bezier(0.2,0.8,0.2,1);width:0%}
+.goal-text{text-align:center;font-size:0.8em;color:var(--txt2);margin-top:8px;font-weight:600}
 
-/* INSTALL BANNER */
-#install-banner{display:none;position:fixed;bottom:78px;left:10px;right:10px;max-width:calc(480px - 20px);margin:0 auto;background:linear-gradient(135deg,#1a0a35,#0d1e35);border:2px solid #7c3aed;border-radius:16px;padding:14px 16px;z-index:250;box-shadow:0 6px 30px rgba(124,58,237,0.5);animation:slideUp 0.4s ease}
-@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.thist{background:rgba(0,0,0,0.2);border-radius:12px;padding:11px 13px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.thist .n{font-size:0.84em;color:var(--txt);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.thist .t{font-size:0.8em;color:#34d399;font-weight:800;flex-shrink:0;font-variant-numeric:tabular-nums}
+.thist .t.pend{color:#fbbf24}
+
+.setting-row{display:flex;justify-content:space-between;align-items:center;margin:10px 0;padding:12px;border-radius:13px;background:rgba(0,0,0,0.2)}
+.setting-row.danger{background:rgba(244,63,94,0.08);border:1px solid rgba(244,63,94,0.2)}
+.sr-title{font-size:0.86em;font-weight:700}
+.sr-sub{font-size:0.7em;color:var(--txt3);margin-top:2px}
+.sr-title.red{color:#fb7185}
+.sr-title.violet{color:#c4b5fd}
+.sel-mini{background:rgba(0,0,0,0.3);border:1px solid var(--border);color:var(--txt);border-radius:9px;padding:7px 10px;font-size:0.82em;font-family:inherit;outline:none}
+/* Toggle */
+.toggle{position:relative;width:50px;height:28px;flex-shrink:0;cursor:pointer}
+.toggle input{opacity:0;width:0;height:0}
+.toggle .track{position:absolute;inset:0;background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:14px;transition:0.25s}
+.toggle .knob{position:absolute;top:3px;left:3px;width:22px;height:22px;background:#fff;border-radius:50%;transition:0.25s;box-shadow:0 2px 6px rgba(0,0,0,0.3)}
+.toggle.on .track{background:var(--grad)}
+.toggle.on.danger .track{background:var(--grad-danger)}
+.toggle.on .knob{left:25px}
+
+.demo-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:10px}
+.demo-btn{padding:9px 4px;border-radius:11px;background:rgba(0,0,0,0.25);border:1px solid var(--border);color:var(--txt2);font-size:0.66em;font-weight:700;cursor:pointer;font-family:inherit;transition:0.15s}
+.demo-btn:active{background:rgba(139,92,246,0.15);border-color:var(--violet)}
+
+/* ░░ BOTTOM NAV ░░ */
+#nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(13,11,20,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:11px 4px 9px;color:var(--txt3);font-size:0.6em;cursor:pointer;border:none;background:transparent;gap:3px;font-family:inherit;font-weight:700;transition:0.2s;position:relative}
+.nav-btn .nicon{font-size:1.5em;transition:0.2s}
+.nav-btn.active{color:#c4b5fd}
+.nav-btn.active .nicon{transform:translateY(-2px) scale(1.1)}
+.nav-btn.active::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:28px;height:3px;background:var(--grad);border-radius:0 0 4px 4px}
+
+/* ░░ MODALS ░░ */
+.overlay{display:none;position:fixed;inset:0;background:rgba(5,4,10,0.6);backdrop-filter:blur(6px);z-index:200;align-items:flex-end;justify-content:center}
+.overlay.show{display:flex;animation:fadeOverlay 0.25s}
+@keyframes fadeOverlay{from{opacity:0}to{opacity:1}}
+.sheet{background:var(--bg2);border-radius:26px 26px 0 0;border-top:1px solid var(--border2);padding:24px 18px calc(40px + env(safe-area-inset-bottom));width:100%;max-width:480px;box-shadow:0 -20px 60px rgba(0,0,0,0.6);animation:sheetUp 0.35s cubic-bezier(0.2,0.9,0.2,1);max-height:88vh;overflow-y:auto}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-grip{width:40px;height:4px;background:var(--border2);border-radius:4px;margin:0 auto 16px}
+.sheet-mascot{display:flex;justify-content:center;margin:-60px 0 6px}
+.sheet-mascot-spr{background-repeat:no-repeat;background-position:0 0;filter:drop-shadow(0 6px 14px rgba(0,0,0,0.5))}
+.sheet-title{font-size:1.2em;font-weight:800;text-align:center;margin-bottom:6px}
+.sheet-sub{font-size:0.85em;color:var(--txt2);text-align:center;line-height:1.5;margin-bottom:18px}
+.reminder-box{background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:14px;padding:13px;margin-bottom:18px;font-size:0.88em;color:#cbd5e1;line-height:1.5}
+.two-btn{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bigbtn{padding:16px 10px;border-radius:15px;border:none;font-size:0.86em;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;font-family:inherit;transition:transform 0.12s}
+.bigbtn:active{transform:scale(0.96)}
+.bigbtn .be{font-size:1.7em}
+.bb-work{background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.3)}
+.bb-rest{background:rgba(168,85,247,0.12);color:#c084fc;border:1px solid rgba(168,85,247,0.3)}
+.break-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:16px}
+.break-opt{padding:16px 8px;border-radius:15px;border:1px solid var(--border);background:rgba(0,0,0,0.2);cursor:pointer;font-family:inherit;text-align:center;transition:0.15s}
+.break-opt:active{transform:scale(0.96);border-color:var(--purple);background:rgba(168,85,247,0.1)}
+.break-opt .bv{font-size:1.6em;font-weight:800;display:block;background:var(--grad-rest);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.break-opt .bl{font-size:0.72em;color:var(--txt3);margin-top:2px}
+
+/* ░░ IN-APP BANNER ░░ */
+#banner{display:none;position:fixed;top:calc(12px + env(safe-area-inset-top));left:12px;right:12px;max-width:456px;margin:0 auto;background:var(--bg2);border:1px solid var(--border2);border-radius:18px;padding:14px;z-index:300;box-shadow:0 12px 40px rgba(0,0,0,0.6);animation:bannerIn 0.35s cubic-bezier(0.2,0.9,0.2,1)}
+@keyframes bannerIn{from{transform:translateY(-130%)}to{transform:translateY(0)}}
+.bn-row{display:flex;align-items:center;gap:12px}
+.bn-icon{width:42px;height:42px;border-radius:12px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:1.4em;flex-shrink:0}
+.bn-txt{flex:1;min-width:0}
+.bn-title{font-weight:800;font-size:0.9em;margin-bottom:2px}
+.bn-body{color:var(--txt2);font-size:0.8em;line-height:1.4}
+.bn-close{background:transparent;border:none;color:var(--txt3);cursor:pointer;font-size:1.1em;flex-shrink:0}
+.bn-actions{display:flex;gap:8px;margin-top:11px}
+.bn-btn{flex:1;padding:9px;border-radius:11px;border:none;font-size:0.8em;font-weight:800;cursor:pointer;font-family:inherit}
+.bn-yes{background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3)}
+.bn-no{background:rgba(244,63,94,0.12);color:#fb7185;border:1px solid rgba(244,63,94,0.3)}
+
+/* ░░ INSTALL BANNER ░░ */
+#install-banner{display:none;position:fixed;bottom:calc(80px + env(safe-area-inset-bottom));left:12px;right:12px;max-width:456px;margin:0 auto;background:linear-gradient(135deg,rgba(139,92,246,0.18),rgba(99,102,241,0.12));border:1px solid rgba(139,92,246,0.4);border-radius:18px;padding:15px;z-index:250;backdrop-filter:blur(16px);box-shadow:0 12px 40px rgba(139,92,246,0.3);animation:bannerUp 0.4s}
+@keyframes bannerUp{from{transform:translateY(140%)}to{transform:translateY(0)}}
 .ib-row{display:flex;align-items:center;gap:12px}
-.ib-icon{font-size:2.2em}
-.ib-title{font-weight:800;color:#e2e8f0;font-size:0.92em;margin-bottom:2px}
-.ib-sub{color:#a78bfa;font-size:0.75em;line-height:1.4}
+.ib-icon{font-size:2em}
+.ib-t{font-weight:800;font-size:0.92em}
+.ib-s{color:#c4b5fd;font-size:0.74em;margin-top:2px;line-height:1.4}
 .ib-btns{display:flex;gap:8px;margin-top:12px}
-.ib-install{flex:1;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;border:none;padding:11px;border-radius:10px;font-size:0.85em;font-weight:800;cursor:pointer;font-family:inherit}
-.ib-close{background:transparent;border:none;color:#4a3060;cursor:pointer;font-size:1.1em;padding:4px}
+.ib-install{flex:1;background:var(--grad);color:#fff;border:none;padding:12px;border-radius:13px;font-size:0.86em;font-weight:800;cursor:pointer;font-family:inherit}
+.ib-x{background:transparent;border:none;color:var(--txt3);cursor:pointer;font-size:1.1em;padding:4px}
 </style>
 </head>
 <body>
@@ -196,223 +285,181 @@ select option{background:#080f1e}
     <div class="ib-row">
       <div class="ib-icon">📲</div>
       <div style="flex:1">
-        <div class="ib-title">¡Instala Focus en tu celular!</div>
-        <div class="ib-sub">Notificaciones reales + funciona sin internet</div>
+        <div class="ib-t">Instala Focus</div>
+        <div class="ib-s">Notificaciones reales + funciona sin internet</div>
       </div>
-      <button class="ib-close" onclick="cerrarInstall()">✕</button>
+      <button class="ib-x" onclick="cerrarInstall()">✕</button>
     </div>
-    <div class="ib-btns">
-      <button class="ib-install" onclick="instalarApp()">📲 Instalar ahora</button>
-    </div>
+    <div class="ib-btns"><button class="ib-install" onclick="instalarApp()">Instalar ahora</button></div>
   </div>
 
-  <!-- IN-APP NOTIF BANNER -->
-  <div id="notif-banner">
-    <div class="nb-row">
-      <div class="nb-icon">🤖</div>
-      <div class="nb-text">
-        <div class="nb-title" id="nb-title">Focus</div>
-        <div class="nb-body" id="nb-body"></div>
+  <!-- IN-APP BANNER -->
+  <div id="banner">
+    <div class="bn-row">
+      <div class="bn-icon" id="bn-icon">🤖</div>
+      <div class="bn-txt">
+        <div class="bn-title" id="bn-title">Focus</div>
+        <div class="bn-body" id="bn-body"></div>
       </div>
-      <button class="nb-close" onclick="closeBanner()">✕</button>
+      <button class="bn-close" onclick="closeBanner()">✕</button>
     </div>
-    <div class="nb-actions" id="nb-actions"></div>
+    <div class="bn-actions" id="bn-actions"></div>
   </div>
 
   <div id="content">
 
-    <!-- ═══ INICIO ═══ -->
+    <!-- ═══════ INICIO ═══════ -->
     <div id="screen-inicio" class="screen active">
       <div class="app-header">
-        <span class="app-title">⚡ Focus</span>
-        <div style="display:flex;gap:6px;align-items:center">
-          <span class="notif-pill" id="notif-status" onclick="abrirNotifSettings()">🔔 ...</span>
-          <span class="streak-badge">🔥 <span id="streak-val">0</span></span>
+        <div class="brand">
+          <div class="brand-logo">⚡</div>
+          <div class="brand-name">Focus</div>
+        </div>
+        <div class="header-right">
+          <div class="notif-dot" id="notif-dot" onclick="abrirNotifInfo()">🔔</div>
+          <div class="streak-chip">🔥 <span id="streak-val">0</span></div>
         </div>
       </div>
 
-      <!-- NOTIF ACTIVATE BANNER (cuando no estén activadas) -->
       <div id="notif-activate-banner">
-        <div class="nab-title">🔔 ¡Activa las notificaciones ya!</div>
-        <div class="nab-sub">Sin esto NO te puedo avisar cuando te distraigas, ni cuando termine tu descanso. Es lo más importante.</div>
-        <button class="nab-btn" onclick="activarNotif()">🚀 ACTIVAR NOTIFICACIONES</button>
+        <div class="nab-title">🔔 ¡Activa las notificaciones!</div>
+        <div class="nab-sub">Sin esto NO puedo avisarte cuando te distraigas ni recordarte que registres tu actividad. Es lo más importante.</div>
+        <button class="nab-btn" onclick="activarNotif()">🚀 ACTIVAR AHORA</button>
       </div>
 
       <div id="mascot-section">
-        <div id="mascot-container" onclick="mascotTap()">
+        <div id="mascot-stage" onclick="mascotTap()">
+          <div id="mascot-glow"></div>
           <div id="mascot-sprite"></div>
         </div>
-        <div id="mascot-speech">¡Listo! Toca una tarea en "Tareas" para empezar.</div>
+        <div id="mascot-speech">¡Listo! Toca una tarea para empezar a concentrarte.</div>
       </div>
 
-      <!-- ESTADO ACTUAL -->
-      <div id="state-card">
+      <div id="state-card" class="glass">
         <div id="state-content"></div>
       </div>
 
-      <button id="btn-que-hago" onclick="openQueHago()" style="width:100%;background:transparent;color:#a78bfa;border:1.5px solid #5b21b6;padding:11px;border-radius:11px;font-size:0.88em;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:12px">⚡ ¿Qué tarea me conviene ahora?</button>
+      <button id="btn-quehago" onclick="openQueHago()">✨ ¿Qué tarea me conviene ahora?</button>
 
-      <div class="card">
-        <div class="card-label">📊 Hoy</div>
-        <div class="mini-stats">
-          <div><div class="mini-stat-val" style="color:#22c55e" id="h-comp">0</div><div class="mini-stat-lbl">Hechas</div></div>
-          <div><div class="mini-stat-val" style="color:#a78bfa" id="h-foco">0m</div><div class="mini-stat-lbl">Enfocado</div></div>
-          <div><div class="mini-stat-val" style="color:#f59e0b" id="h-pend">0</div><div class="mini-stat-lbl">Pendientes</div></div>
-        </div>
+      <div class="stat-row">
+        <div class="stat-pill glass"><div class="sp-val" style="color:#34d399" id="h-comp">0</div><div class="sp-lbl">Hechas</div></div>
+        <div class="stat-pill glass"><div class="sp-val" style="color:#c4b5fd" id="h-foco">0m</div><div class="sp-lbl">Enfocado</div></div>
+        <div class="stat-pill glass"><div class="sp-val" style="color:#fbbf24" id="h-pend">0</div><div class="sp-lbl">Pendientes</div></div>
       </div>
     </div>
 
-    <!-- ═══ TAREAS ═══ -->
+    <!-- ═══════ TAREAS ═══════ -->
     <div id="screen-tareas" class="screen">
       <div class="app-header">
-        <span class="app-title">✅ Mis tareas</span>
-        <button onclick="goAgregar()" style="background:#7c3aed;color:white;border:none;border-radius:20px;padding:7px 16px;font-size:0.8em;font-weight:700;cursor:pointer;font-family:inherit">+ Nueva</button>
+        <div class="brand"><div class="brand-name" style="font-size:1.1em">✅ Mis tareas</div></div>
+        <button onclick="goAgregar()" style="background:var(--grad);color:#fff;border:none;border-radius:22px;padding:9px 18px;font-size:0.82em;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 4px 14px rgba(99,102,241,0.35)">+ Nueva</button>
       </div>
-      <div style="background:#0d1e35;border:1px solid #1e4a7a;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:0.78em;color:#7eb8f7;line-height:1.4">
-        💡 <strong>Toca cualquier tarea</strong> para seleccionarla y comenzar a trabajar.
+      <div class="glass" style="padding:12px 14px;margin-bottom:14px;font-size:0.8em;color:var(--txt2);line-height:1.5">
+        💡 <strong style="color:#c4b5fd">Toca una tarea</strong> para enfocarte en ella y arrancar el cronómetro.
       </div>
       <div id="lista-tareas"></div>
     </div>
 
-    <!-- ═══ AGREGAR ═══ -->
+    <!-- ═══════ AGREGAR ═══════ -->
     <div id="screen-agregar" class="screen">
       <div class="app-header">
-        <button onclick="goTareas()" style="background:transparent;border:none;color:#3a6080;font-size:1.4em;cursor:pointer">←</button>
-        <span style="font-size:1em;font-weight:800;color:#a78bfa">Nueva tarea</span>
-        <span style="width:40px"></span>
+        <button onclick="goTareas()" style="background:var(--surface);border:1px solid var(--border);color:var(--txt2);font-size:1.1em;cursor:pointer;width:38px;height:38px;border-radius:11px">←</button>
+        <div class="brand-name" style="font-size:1.05em">Nueva tarea</div>
+        <span style="width:38px"></span>
       </div>
-
-      <div class="form-group">
-        <label>¿Qué hay que hacer?</label>
-        <input type="text" id="inp-tarea" placeholder="ej: Pagar la factura del banco">
-      </div>
-      <div class="form-group">
-        <label>⚡ Primer paso físico concreto</label>
-        <input type="text" id="inp-paso" placeholder="ej: Abrir la app del banco">
-      </div>
-      <div class="form-group">
+      <div class="field"><label>¿Qué hay que hacer?</label><input class="input" type="text" id="inp-tarea" placeholder="ej: Estudiar capítulo 3 de auditoría"></div>
+      <div class="field"><label>⚡ Primer paso concreto</label><input class="input" type="text" id="inp-paso" placeholder="ej: Abrir el PDF y leer la página 1"></div>
+      <div class="field">
         <label>🔋 Energía requerida</label>
-        <div class="energy-btns">
-          <button class="ebtn" id="eb-alto" onclick="selE('alto')">🔴 Alta</button>
-          <button class="ebtn" id="eb-medio" onclick="selE('medio')">🟡 Media</button>
-          <button class="ebtn sel-bajo" id="eb-bajo" onclick="selE('bajo')">🟢 Baja</button>
+        <div class="seg">
+          <button class="seg-btn" id="eb-alto" onclick="selE('alto')">🔴 Alta</button>
+          <button class="seg-btn" id="eb-medio" onclick="selE('medio')">🟡 Media</button>
+          <button class="seg-btn sel-bajo" id="eb-bajo" onclick="selE('bajo')">🟢 Baja</button>
         </div>
       </div>
-      <div class="form-group">
+      <div class="field">
         <label>📅 ¿Para cuándo?</label>
-        <select id="sel-fecha">
+        <select class="input" id="sel-fecha">
           <option value="hoy">Hoy sí o sí</option>
           <option value="semana">Esta semana</option>
           <option value="libre">Sin fecha</option>
         </select>
       </div>
-      <div class="form-group">
-        <label>📍 ¿Dónde lo haces?</label>
-        <select id="sel-ctx">
-          <option value="any">Cualquier lugar</option>
-          <option value="cel">📱 Solo con celular</option>
-          <option value="pc">💻 Necesito computadora</option>
-          <option value="casa">🏠 En casa</option>
-        </select>
-      </div>
-      <button class="btn-primary" onclick="guardarTarea()">Agregar tarea</button>
-      <button class="btn-secondary" onclick="goTareas()">Cancelar</button>
+      <button class="btn btn-grad" onclick="guardarTarea()">Agregar tarea</button>
+      <button class="btn btn-ghost" onclick="goTareas()">Cancelar</button>
     </div>
 
-    <!-- ═══ STATS ═══ -->
+    <!-- ═══════ STATS ═══════ -->
     <div id="screen-stats" class="screen">
-      <div class="app-header">
-        <span class="app-title">📊 Estadísticas</span>
-      </div>
+      <div class="app-header"><div class="brand-name" style="font-size:1.1em">📊 Estadísticas</div></div>
       <div class="stats-grid">
-        <div class="stat-card"><div class="stat-val" id="ss-streak">0</div><div class="stat-lbl">🔥 Racha</div></div>
-        <div class="stat-card"><div class="stat-val" id="ss-comp">0</div><div class="stat-lbl">✅ Hechas hoy</div></div>
-        <div class="stat-card"><div class="stat-val" id="ss-foco">0m</div><div class="stat-lbl">⏱️ Enfocado hoy</div></div>
-        <div class="stat-card"><div class="stat-val" id="ss-distr" style="color:#ef4444">0</div><div class="stat-lbl">🛑 Distracciones</div></div>
+        <div class="stat-card glass"><div class="v" id="ss-streak">0</div><div class="l">🔥 Racha</div></div>
+        <div class="stat-card glass"><div class="v" id="ss-comp">0</div><div class="l">✅ Hechas hoy</div></div>
+        <div class="stat-card glass"><div class="v" id="ss-foco">0m</div><div class="l">⏱️ Enfocado hoy</div></div>
+        <div class="stat-card glass"><div class="v red" id="ss-distr">0</div><div class="l">🛑 Distracciones</div></div>
       </div>
 
-      <!-- Objetivo diario -->
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <div class="card-label">🎯 Objetivo diario</div>
-          <select id="sel-objetivo" onchange="saveObjetivo()" style="width:auto;padding:5px 8px;font-size:0.78em;background:#080f1e;border:1px solid #1a3050;color:#e2e8f0;border-radius:6px">
-            <option value="30">30 min</option>
-            <option value="60">1 hora</option>
-            <option value="120" selected>2 horas</option>
-            <option value="180">3 horas</option>
-            <option value="240">4 horas</option>
-            <option value="360">6 horas</option>
+      <div class="card glass">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="card-h" style="margin:0">🎯 Objetivo diario</div>
+          <select class="sel-mini" id="sel-objetivo" onchange="saveObjetivo()">
+            <option value="30">30 min</option><option value="60">1 hora</option>
+            <option value="120" selected>2 horas</option><option value="180">3 horas</option>
+            <option value="240">4 horas</option><option value="360">6 horas</option>
           </select>
         </div>
-        <div style="background:#0a1525;border-radius:10px;height:14px;overflow:hidden;position:relative">
-          <div id="obj-bar" style="height:100%;background:linear-gradient(90deg,#22c55e,#a78bfa);transition:width 1s;width:0%"></div>
-        </div>
-        <div id="obj-text" style="text-align:center;font-size:0.78em;color:#7eb8f7;margin-top:6px">0m de 2h</div>
+        <div class="goal-bar"><div class="goal-fill" id="obj-fill"></div></div>
+        <div class="goal-text" id="obj-text">0m de 2h</div>
       </div>
 
-      <!-- Tareas con tiempo -->
-      <div class="card">
-        <div class="card-label">⏱️ Tiempo por tarea (hoy)</div>
+      <div class="card glass">
+        <div class="card-h">⏱️ Tiempo por tarea (hoy)</div>
         <div id="task-history"></div>
       </div>
 
-      <!-- NOTIF SETTINGS -->
-      <div class="card">
-        <div class="card-label">🔔 Notificaciones</div>
+      <div class="card glass">
+        <div class="card-h">🔔 Notificaciones e invasividad</div>
         <div id="notif-section"></div>
 
-        <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 10px">
-          <span style="font-size:0.85em;color:#7eb8f7">Check-in (¿sigues?) cada:</span>
-          <select id="sel-interval" onchange="saveInterval()" style="width:auto;padding:7px 12px;font-size:0.85em">
-            <option value="15">15 minutos</option>
-            <option value="30" selected>30 minutos</option>
-            <option value="45">45 minutos</option>
-            <option value="60">1 hora</option>
+        <div class="setting-row">
+          <div><div class="sr-title">⚡ Check-in (¿sigues?)</div><div class="sr-sub">Pregunta mientras trabajas</div></div>
+          <select class="sel-mini" id="sel-interval" onchange="saveInterval()">
+            <option value="15">15 min</option><option value="30" selected>30 min</option>
+            <option value="45">45 min</option><option value="60">1 h</option>
           </select>
         </div>
 
-        <div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0">
-          <span style="font-size:0.85em;color:#7eb8f7">💓 Pulso de vibración cada:</span>
-          <select id="sel-pulse" onchange="savePulse()" style="width:auto;padding:7px 12px;font-size:0.85em">
-            <option value="3">3 minutos</option>
-            <option value="5" selected>5 minutos</option>
-            <option value="10">10 minutos</option>
-            <option value="15">15 minutos</option>
-            <option value="0">Desactivado</option>
+        <div class="setting-row">
+          <div><div class="sr-title">💓 Pulso de vibración</div><div class="sr-sub">Señal de vida periódica</div></div>
+          <select class="sel-mini" id="sel-pulse" onchange="savePulse()">
+            <option value="3">3 min</option><option value="5" selected>5 min</option>
+            <option value="10">10 min</option><option value="15">15 min</option><option value="0">Off</option>
           </select>
         </div>
 
-        <div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0;padding:10px;background:#1a0505;border:1px solid #3a1010;border-radius:8px">
-          <div>
-            <div style="font-size:0.85em;color:#fca5a5;font-weight:700">🚨 Modo INVASIVO</div>
-            <div style="font-size:0.7em;color:#f87171;margin-top:2px">Alertas escalonadas cuando sales de Focus</div>
-          </div>
-          <label style="position:relative;width:48px;height:26px;cursor:pointer">
-            <input type="checkbox" id="chk-invasivo" onchange="saveInvasivo()" style="opacity:0;width:0;height:0">
-            <span id="sw-invasivo" style="position:absolute;inset:0;background:#0a1525;border-radius:13px;transition:0.2s"></span>
-            <span id="sw-invasivo-knob" style="position:absolute;top:3px;left:3px;width:20px;height:20px;background:white;border-radius:50%;transition:0.2s"></span>
-          </label>
+        <div class="setting-row">
+          <div><div class="sr-title violet">😴 Recordatorio si NO uso la app</div><div class="sr-sub">Te molesta para que registres actividad</div></div>
+          <select class="sel-mini" id="sel-idle" onchange="saveIdle()">
+            <option value="30" selected>30 min</option><option value="60">1 h</option>
+            <option value="120">2 h</option><option value="0">Off</option>
+          </select>
         </div>
 
-        <div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0;padding:10px;background:#0a1525;border:1px solid #1a3050;border-radius:8px">
-          <div>
-            <div style="font-size:0.85em;color:#a78bfa;font-weight:700">💡 Mantener pantalla encendida</div>
-            <div style="font-size:0.7em;color:#7eb8f7;margin-top:2px">No se apaga la pantalla mientras trabajas</div>
-          </div>
-          <label style="position:relative;width:48px;height:26px;cursor:pointer">
-            <input type="checkbox" id="chk-wakelock" onchange="saveWakeLock()" style="opacity:0;width:0;height:0">
-            <span id="sw-wakelock" style="position:absolute;inset:0;background:#0a1525;border-radius:13px;transition:0.2s;border:1px solid #1a3050"></span>
-            <span id="sw-wakelock-knob" style="position:absolute;top:3px;left:3px;width:20px;height:20px;background:white;border-radius:50%;transition:0.2s"></span>
-          </label>
+        <div class="setting-row danger">
+          <div><div class="sr-title red">🚨 Modo INVASIVO</div><div class="sr-sub">Alarmas escalonadas al salir de Focus</div></div>
+          <div class="toggle danger" id="tg-invasivo" onclick="toggleInvasivo()"><input type="checkbox"><span class="track"></span><span class="knob"></span></div>
         </div>
 
-        <button class="btn-primary" onclick="testNotif()" style="padding:10px;font-size:0.85em;background:linear-gradient(135deg,#22c55e,#16a34a)">🔔 Probar notificación (con sonido)</button>
+        <div class="setting-row">
+          <div><div class="sr-title violet">💡 Pantalla siempre encendida</div><div class="sr-sub">Mientras trabajas</div></div>
+          <div class="toggle" id="tg-wakelock" onclick="toggleWakeLock()"><input type="checkbox"><span class="track"></span><span class="knob"></span></div>
+        </div>
+
+        <button class="btn btn-work btn-sm" style="margin-top:12px" onclick="testNotif()">🔔 Probar notificación (con sonido)</button>
       </div>
 
-      <!-- DEMO ANIMACIONES MEGA MAN -->
-      <div class="card">
-        <div class="card-label">🤖 Ver animaciones de Mega Man</div>
-        <div style="font-size:0.78em;color:#7eb8f7;margin-top:4px;line-height:1.4">Toca cada botón para ver cómo se ve Mega Man en cada estado:</div>
+      <div class="card glass">
+        <div class="card-h">🤖 Animaciones de Mega Man</div>
         <div class="demo-grid">
           <button class="demo-btn" onclick="demoAnim('idle')">😎 Idle</button>
           <button class="demo-btn" onclick="demoAnim('alerta')">👉 Señala</button>
@@ -422,172 +469,143 @@ select option{background:#080f1e}
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-label">⚙️ Acciones</div>
-        <button onclick="resetDay()" class="btn-secondary" style="margin-top:6px;font-size:0.85em">🔄 Resetear estadísticas del día</button>
-        <button onclick="clearAll()" class="btn-secondary" style="margin-top:8px;font-size:0.85em;color:#ef4444;border-color:#3a1010">🗑️ Borrar todos los datos</button>
+      <div class="card glass">
+        <div class="card-h">⚙️ Datos</div>
+        <button class="btn btn-ghost btn-sm" onclick="resetDay()">🔄 Resetear día</button>
+        <button class="btn btn-danger-ghost btn-sm" onclick="clearAll()">🗑️ Borrar todo</button>
       </div>
     </div>
 
   </div><!-- /content -->
 
-  <!-- BOTTOM NAV -->
-  <nav id="bottom-nav">
-    <button class="nav-btn active" id="nav-inicio" onclick="go('inicio')"><span class="ni">🏠</span><span>Inicio</span></button>
-    <button class="nav-btn" id="nav-tareas" onclick="go('tareas')"><span class="ni">✅</span><span>Tareas</span></button>
-    <button class="nav-btn" id="nav-stats" onclick="go('stats')"><span class="ni">📊</span><span>Stats</span></button>
+  <nav id="nav">
+    <button class="nav-btn active" id="nav-inicio" onclick="go('inicio')"><span class="nicon">🏠</span><span>Inicio</span></button>
+    <button class="nav-btn" id="nav-tareas" onclick="go('tareas')"><span class="nicon">✅</span><span>Tareas</span></button>
+    <button class="nav-btn" id="nav-stats" onclick="go('stats')"><span class="nicon">📊</span><span>Stats</span></button>
   </nav>
 </div>
 
 <!-- MODAL: Distracción -->
-<div class="modal-overlay" id="modal-distract">
-  <div class="modal-sheet">
-    <div class="modal-mascot"><div class="modal-mascot-spr" id="modal-mascot-distract"></div></div>
-    <div class="modal-title">🛑 ¡Para un momento!</div>
-    <div class="modal-sub">Reconocer la distracción ya es un gran paso. ¿Qué decides?</div>
-    <div class="distract-reminder" id="distract-info"></div>
-    <div class="distract-btns">
-      <button class="quick-btn btn-complete" onclick="volverTrabajo()">
-        <span class="qe">💪</span>Volver al trabajo
-      </button>
-      <button class="quick-btn" onclick="openBreak()" style="background:#1a0a35;border:1.5px solid #7c3aed;color:#a78bfa">
-        <span class="qe">☕</span>Tomar descanso
-      </button>
+<div class="overlay" id="modal-distract">
+  <div class="sheet">
+    <div class="sheet-grip"></div>
+    <div class="sheet-mascot"><div class="sheet-mascot-spr" id="ms-distract"></div></div>
+    <div class="sheet-title">🛑 ¡Para un momento!</div>
+    <div class="sheet-sub">Reconocer la distracción ya es un gran paso. ¿Qué decides?</div>
+    <div class="reminder-box" id="distract-info"></div>
+    <div class="two-btn">
+      <button class="bigbtn bb-work" onclick="volverTrabajo()"><span class="be">💪</span>Volver al trabajo</button>
+      <button class="bigbtn bb-rest" onclick="openBreak()"><span class="be">☕</span>Tomar descanso</button>
     </div>
-    <button class="btn-secondary" onclick="closeDistract()" style="margin-top:10px">Cerrar</button>
+    <button class="btn btn-ghost" style="margin-top:12px" onclick="closeDistract()">Cerrar</button>
   </div>
 </div>
 
-<!-- MODAL: Tomar descanso -->
-<div class="modal-overlay" id="modal-break">
-  <div class="modal-sheet">
-    <div class="modal-mascot"><div class="modal-mascot-spr" id="modal-mascot-break"></div></div>
-    <div class="modal-title">☕ ¿Cuánto descansas?</div>
-    <div class="modal-sub">Te avisaré con sonido cuando termine, aunque tengas la pantalla apagada.</div>
-    <div class="break-options">
-      <button class="break-opt" onclick="iniciarDescanso(5)"><span class="bo-val">5</span><span class="bo-lbl">minutos</span></button>
-      <button class="break-opt" onclick="iniciarDescanso(15)"><span class="bo-val">15</span><span class="bo-lbl">minutos</span></button>
-      <button class="break-opt" onclick="iniciarDescanso(30)"><span class="bo-val">30</span><span class="bo-lbl">minutos</span></button>
-      <button class="break-opt" onclick="iniciarDescanso(60)"><span class="bo-val">1h</span><span class="bo-lbl">una hora</span></button>
+<!-- MODAL: Descanso -->
+<div class="overlay" id="modal-break">
+  <div class="sheet">
+    <div class="sheet-grip"></div>
+    <div class="sheet-mascot"><div class="sheet-mascot-spr" id="ms-break"></div></div>
+    <div class="sheet-title">☕ ¿Cuánto descansas?</div>
+    <div class="sheet-sub">Te avisaré con sonido cuando termine, aunque tengas la pantalla apagada.</div>
+    <div class="break-grid">
+      <button class="break-opt" onclick="iniciarDescanso(5)"><span class="bv">5</span><span class="bl">minutos</span></button>
+      <button class="break-opt" onclick="iniciarDescanso(15)"><span class="bv">15</span><span class="bl">minutos</span></button>
+      <button class="break-opt" onclick="iniciarDescanso(30)"><span class="bv">30</span><span class="bl">minutos</span></button>
+      <button class="break-opt" onclick="iniciarDescanso(60)"><span class="bv">1h</span><span class="bl">una hora</span></button>
     </div>
-    <button class="btn-secondary" onclick="closeBreak()">Cancelar</button>
+    <button class="btn btn-ghost" onclick="closeBreak()">Cancelar</button>
   </div>
 </div>
 
-<!-- MODAL: Qué hago ahora -->
-<div class="modal-overlay" id="modal-quehago">
-  <div class="modal-sheet">
-    <div class="modal-mascot"><div class="modal-mascot-spr" id="modal-mascot-quehago"></div></div>
-    <div class="modal-title">⚡ ¿Qué tarea me conviene?</div>
-    <div class="modal-sub">Te sugiero la mejor según tu energía actual.</div>
-    <div class="form-group">
+<!-- MODAL: Qué hago -->
+<div class="overlay" id="modal-quehago">
+  <div class="sheet">
+    <div class="sheet-grip"></div>
+    <div class="sheet-mascot"><div class="sheet-mascot-spr" id="ms-quehago"></div></div>
+    <div class="sheet-title">✨ ¿Qué tarea me conviene?</div>
+    <div class="sheet-sub">Te sugiero la mejor según tu energía actual.</div>
+    <div class="field">
       <label>🔋 ¿Cuánta energía tienes ahora?</label>
-      <div class="energy-btns">
-        <button class="ebtn" id="qe-alto" onclick="selQE('alto')">🔴 Alta</button>
-        <button class="ebtn sel-medio" id="qe-medio" onclick="selQE('medio')">🟡 Media</button>
-        <button class="ebtn" id="qe-bajo" onclick="selQE('bajo')">🟢 Baja</button>
+      <div class="seg">
+        <button class="seg-btn" id="qe-alto" onclick="selQE('alto')">🔴 Alta</button>
+        <button class="seg-btn sel-medio" id="qe-medio" onclick="selQE('medio')">🟡 Media</button>
+        <button class="seg-btn" id="qe-bajo" onclick="selQE('bajo')">🟢 Baja</button>
       </div>
     </div>
-    <button class="btn-primary" onclick="calcTask()">Ver mi tarea →</button>
-    <button class="btn-secondary" onclick="closeQueHago()">Cancelar</button>
+    <button class="btn btn-grad" onclick="calcTask()">Ver mi tarea →</button>
+    <button class="btn btn-ghost" onclick="closeQueHago()">Cancelar</button>
   </div>
 </div>
 
 <script>
-// ══════════════════════════════════════════════
-// SPRITE ENGINE
-// ══════════════════════════════════════════════
-const SP = {
-  idle:        {c:5,r:5,n:25,fw:378,fh:670,sw:1890,sh:3350,ms:45},
-  urgente:     {c:5,r:5,n:25,fw:378,fh:670,sw:1890,sh:3350,ms:45},
-  alerta:      {c:6,r:6,n:36,fw:422,fh:666,sw:2532,sh:3996,ms:42},
-  celebracion: {c:6,r:6,n:36,fw:422,fh:666,sw:2532,sh:3996,ms:42},
-  dormido:     {c:6,r:6,n:36,fw:422,fh:666,sw:2532,sh:3996,ms:42}
+// ══════════════ SPRITE ENGINE ══════════════
+const SP={
+  idle:{c:5,r:5,n:25,fw:378,fh:670,sw:1890,sh:3350,ms:45},
+  urgente:{c:5,r:5,n:25,fw:378,fh:670,sw:1890,sh:3350,ms:45},
+  alerta:{c:6,r:6,n:36,fw:422,fh:666,sw:2532,sh:3996,ms:42},
+  celebracion:{c:6,r:6,n:36,fw:422,fh:666,sw:2532,sh:3996,ms:42},
+  dormido:{c:6,r:6,n:36,fw:422,fh:666,sw:2532,sh:3996,ms:42}
 };
-const DW = 150;
-let spFrame=0, spTimer=null, spCurrent='';
-const modalSpriteState = {};
-
+const DW=145;
+let spFrame=0,spTimer=null,spCurrent='';
+const modalSp={};
 function playAnim(name){
-  if(spCurrent===name && spTimer) return;
+  if(spCurrent===name&&spTimer)return;
   spCurrent=name;
-  if(spTimer) clearInterval(spTimer);
-  const s=SP[name];
-  const sc=DW/s.fw;
-  const dh=Math.round(s.fh*sc);
+  if(spTimer)clearInterval(spTimer);
+  const s=SP[name],sc=DW/s.fw,dh=Math.round(s.fh*sc);
   const el=document.getElementById('mascot-sprite');
   el.style.cssText=`width:${DW}px;height:${dh}px;background-image:url('./sprites/megaman-${name}.png');background-size:${Math.round(s.sw*sc)}px ${Math.round(s.sh*sc)}px;background-repeat:no-repeat`;
+  // Glow color por estado
+  const glow=document.getElementById('mascot-glow');
+  const glowColors={idle:'rgba(139,92,246,0.22)',alerta:'rgba(245,158,11,0.28)',urgente:'rgba(244,63,94,0.3)',celebracion:'rgba(16,185,129,0.3)',dormido:'rgba(99,102,241,0.18)'};
+  if(glow)glow.style.background=`radial-gradient(circle,${glowColors[name]||'rgba(139,92,246,0.22)'},transparent 65%)`;
   spFrame=0;
-  function tick(){
-    const col=spFrame%s.c, row=Math.floor(spFrame/s.c);
-    el.style.backgroundPosition=`${-(col*DW)}px ${-(row*dh)}px`;
-    spFrame=(spFrame+1)%s.n;
-  }
-  tick();
-  spTimer=setInterval(tick,s.ms);
+  function tick(){const col=spFrame%s.c,row=Math.floor(spFrame/s.c);el.style.backgroundPosition=`${-(col*DW)}px ${-(row*dh)}px`;spFrame=(spFrame+1)%s.n;}
+  tick();spTimer=setInterval(tick,s.ms);
 }
-
-function playModalAnim(elId, name, width){
-  const W = width || 100;
-  const s=SP[name];
-  const sc=W/s.fw;
-  const dh=Math.round(s.fh*sc);
-  const el=document.getElementById(elId);
-  if(!el) return;
+function playModalAnim(elId,name,width){
+  const W=width||95,s=SP[name],sc=W/s.fw,dh=Math.round(s.fh*sc);
+  const el=document.getElementById(elId);if(!el)return;
   el.style.cssText=`width:${W}px;height:${dh}px;background-image:url('./sprites/megaman-${name}.png');background-size:${Math.round(s.sw*sc)}px ${Math.round(s.sh*sc)}px;background-repeat:no-repeat`;
-  if(modalSpriteState[elId]?.timer) clearInterval(modalSpriteState[elId].timer);
-  modalSpriteState[elId]={frame:0};
-  function tick(){
-    const f=modalSpriteState[elId].frame;
-    const col=f%s.c, row=Math.floor(f/s.c);
-    el.style.backgroundPosition=`${-(col*W)}px ${-(row*dh)}px`;
-    modalSpriteState[elId].frame=(f+1)%s.n;
-  }
-  tick();
-  modalSpriteState[elId].timer=setInterval(tick,s.ms);
+  if(modalSp[elId]?.t)clearInterval(modalSp[elId].t);
+  modalSp[elId]={f:0};
+  function tick(){const f=modalSp[elId].f,col=f%s.c,row=Math.floor(f/s.c);el.style.backgroundPosition=`${-(col*W)}px ${-(row*dh)}px`;modalSp[elId].f=(f+1)%s.n;}
+  tick();modalSp[elId].t=setInterval(tick,s.ms);
 }
+function stopModalAnim(elId){if(modalSp[elId]?.t){clearInterval(modalSp[elId].t);modalSp[elId].t=null;}}
+function setSpeech(t){document.getElementById('mascot-speech').textContent=t;}
 
-function stopModalAnim(elId){
-  if(modalSpriteState[elId]?.timer){
-    clearInterval(modalSpriteState[elId].timer);
-    modalSpriteState[elId].timer=null;
-  }
-}
-
-function setSpeech(t){ document.getElementById('mascot-speech').textContent=t; }
-
-// ══════════════════════════════════════════════
-// DATA STORE
-// ══════════════════════════════════════════════
+// ══════════════ DATA STORE ══════════════
 const S={
   get tasks(){return JSON.parse(localStorage.getItem('fm_t')||'[]')},
   set tasks(v){localStorage.setItem('fm_t',JSON.stringify(v))},
-  get cfg(){return JSON.parse(localStorage.getItem('fm_c')||'{"interval":30,"notif":false,"pulse":5,"invasivo":true,"wakeLock":true,"objetivoMin":120}')},
+  get cfg(){return JSON.parse(localStorage.getItem('fm_c')||'{"interval":30,"notif":false,"pulse":5,"invasivo":true,"wakeLock":true,"objetivoMin":120,"idle":30}')},
   set cfg(v){localStorage.setItem('fm_c',JSON.stringify(v))},
   get stats(){return JSON.parse(localStorage.getItem('fm_s')||'{"streak":0,"date":null,"comp":0,"focoMs":0,"distracciones":0}')},
   set stats(v){localStorage.setItem('fm_s',JSON.stringify(v))},
   get cur(){return localStorage.getItem('fm_cur')||null},
   set cur(v){v?localStorage.setItem('fm_cur',v):localStorage.removeItem('fm_cur')},
-  // Estado: 'idle' | 'selected' | 'working' | 'paused' | 'resting'
   get state(){return JSON.parse(localStorage.getItem('fm_state')||'{"mode":"idle"}')},
-  set state(v){localStorage.setItem('fm_state',JSON.stringify(v))}
+  set state(v){localStorage.setItem('fm_state',JSON.stringify(v))},
+  get lastAct(){return parseInt(localStorage.getItem('fm_la')||'0')},
+  set lastAct(v){localStorage.setItem('fm_la',String(v))}
 };
+function marcarActividad(){S.lastAct=Date.now();}
 
-// ══════════════════════════════════════════════
-// NAVIGATION
-// ══════════════════════════════════════════════
+// ══════════════ NAV ══════════════
 let screen='inicio';
 function go(sc){
   document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
   document.getElementById('screen-'+sc).classList.add('active');
-  const nb=document.getElementById('nav-'+sc);
-  if(nb) nb.classList.add('active');
-  screen=sc;
-  document.getElementById('content').scrollTop=0;
-  if(sc==='inicio') renderHome();
-  if(sc==='tareas') renderTasks();
-  if(sc==='stats') renderStats();
+  const nb=document.getElementById('nav-'+sc);if(nb)nb.classList.add('active');
+  screen=sc;document.getElementById('content').scrollTop=0;
+  marcarActividad();
+  if(sc==='inicio')renderHome();
+  if(sc==='tareas')renderTasks();
+  if(sc==='stats')renderStats();
 }
 function goAgregar(){
   document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
@@ -596,1070 +614,496 @@ function goAgregar(){
 }
 function goTareas(){go('tareas')}
 
-// ══════════════════════════════════════════════
-// ENERGY SELECTOR
-// ══════════════════════════════════════════════
+// ══════════════ ENERGY SELECT ══════════════
 let eSel='bajo';
-function selE(e){
-  eSel=e;
-  ['alto','medio','bajo'].forEach(x=>document.getElementById('eb-'+x).className='ebtn'+(x===e?' sel-'+x:''));
-}
+function selE(e){eSel=e;['alto','medio','bajo'].forEach(x=>document.getElementById('eb-'+x).className='seg-btn'+(x===e?' sel-'+x:''));}
 let qeSel='medio';
-function selQE(e){
-  qeSel=e;
-  ['alto','medio','bajo'].forEach(x=>document.getElementById('qe-'+x).className='ebtn'+(x===e?' sel-'+x:''));
-}
+function selQE(e){qeSel=e;['alto','medio','bajo'].forEach(x=>document.getElementById('qe-'+x).className='seg-btn'+(x===e?' sel-'+x:''));}
 
-// ══════════════════════════════════════════════
-// TASKS - CRUD
-// ══════════════════════════════════════════════
+// ══════════════ TASKS CRUD ══════════════
 function guardarTarea(){
   const txt=document.getElementById('inp-tarea').value.trim();
   if(!txt){alert('Escribe qué hay que hacer');return;}
   const tasks=S.tasks;
-  tasks.unshift({
-    id:Date.now()+'',
-    text:txt,
-    step:document.getElementById('inp-paso').value.trim(),
-    energy:eSel,
-    due:document.getElementById('sel-fecha').value,
-    ctx:document.getElementById('sel-ctx').value,
-    done:false,
-    totalMs:0,
-    sessions:[],
-    createdAt:Date.now()
-  });
+  tasks.unshift({id:Date.now()+'',text:txt,step:document.getElementById('inp-paso').value.trim(),energy:eSel,due:document.getElementById('sel-fecha').value,done:false,totalMs:0,sessions:[],createdAt:Date.now()});
   S.tasks=tasks;
   document.getElementById('inp-tarea').value='';
   document.getElementById('inp-paso').value='';
-  selE('bajo');
-  goTareas();
+  selE('bajo');marcarActividad();goTareas();
 }
-
 function renderTasks(){
-  const tasks=S.tasks;
-  const el=document.getElementById('lista-tareas');
-  if(!tasks.length){
-    el.innerHTML='<div class="empty-state"><span class="ee">📋</span><p>No tienes tareas aún.<br>Agrega tu primera tarea para empezar.</p><button class="btn-primary" onclick="goAgregar()" style="margin-top:16px;max-width:240px">+ Agregar primera tarea</button></div>';
-    return;
-  }
-  const pend=tasks.filter(t=>!t.done);
-  const done=tasks.filter(t=>t.done);
+  const tasks=S.tasks,el=document.getElementById('lista-tareas');
+  if(!tasks.length){el.innerHTML='<div class="empty"><span class="empty-emoji">📋</span><p>No tienes tareas aún.<br>Agrega tu primera para empezar.</p><button class="btn btn-grad" style="max-width:240px;margin:18px auto 0" onclick="goAgregar()">+ Agregar tarea</button></div>';return;}
+  const pend=tasks.filter(t=>!t.done),done=tasks.filter(t=>t.done);
   let html='';
-  if(pend.length){
-    html+=`<div class="section-title">📋 Pendientes (${pend.length})</div>`;
-    pend.forEach(t=>html+=taskHTML(t));
-  }
-  if(done.length){
-    html+=`<div class="section-title" style="color:#22c55e">✅ Completadas (${done.length})</div>`;
-    done.forEach(t=>html+=taskHTML(t));
-  }
+  if(pend.length){html+=`<div class="sec-title">📋 Pendientes (${pend.length})</div>`;pend.forEach(t=>html+=taskHTML(t));}
+  if(done.length){html+=`<div class="sec-title" style="color:#34d399">✅ Completadas (${done.length})</div>`;done.forEach(t=>html+=taskHTML(t));}
   el.innerHTML=html;
 }
-
 function taskHTML(t){
   const elabel={alto:'🔴 Alta',medio:'🟡 Media',bajo:'🟢 Baja'}[t.energy]||'';
-  const eclass={alto:'tag-alto',medio:'tag-medio',bajo:'tag-bajo'}[t.energy]||'tag-bajo';
-  const isCur=S.cur===t.id;
-  const state=S.state;
-  let stateClass='', stateTag='';
+  const ec={alto:'chip-alto',medio:'chip-medio',bajo:'chip-bajo'}[t.energy]||'chip-bajo';
+  const isCur=S.cur===t.id,st=S.state;
+  let cls='',tag='';
   if(isCur){
-    if(state.mode==='working'){stateClass='working';stateTag='<span class="tag tag-work">⚡ EN PROGRESO</span>';}
-    else if(state.mode==='paused'){stateClass='paused';stateTag='<span class="tag tag-paused">⏸ PAUSADA</span>';}
-    else if(state.mode==='selected'||state.mode==='resting'){stateClass='selected';stateTag='<span class="tag tag-sel">🎯 SELECCIONADA</span>';}
+    if(st.mode==='working'){cls='tc-working';tag='<span class="chip chip-work">⚡ En progreso</span>';}
+    else if(st.mode==='paused'){cls='tc-paused';tag='<span class="chip chip-state">⏸ Pausada</span>';}
+    else{cls='tc-selected';tag='<span class="chip chip-state">🎯 Enfocada</span>';}
   }
-  const totalMs=t.totalMs||0;
-  const tiempo=totalMs>0?`<span class="tag tag-time">⏱️ ${formatTime(totalMs)}</span>`:'';
+  const tiempo=t.totalMs>0?`<span class="chip chip-time">⏱️ ${formatTime(t.totalMs)}</span>`:'';
   const click=t.done?'':`onclick="seleccionarTarea('${t.id}')"`;
-  return `<div class="task-item ${stateClass} ${t.done?'done':''}" ${click}>
-    <div class="task-row">
-      <div class="task-check ${t.done?'done':''}" onclick="event.stopPropagation();toggleTask('${t.id}')">${t.done?'✓':''}</div>
-      <div class="task-info">
-        <div class="task-name ${t.done?'done-text':''}">${escapeHtml(t.text)}</div>
-        ${t.step?`<div class="task-step">→ ${escapeHtml(t.step)}</div>`:''}
-        <div class="task-meta">
-          <span class="tag ${eclass}">${elabel}</span>
-          ${tiempo}
-          ${stateTag}
-        </div>
+  return `<div class="task-card glass ${cls} ${t.done?'tc-done':''}" ${click}>
+    <div class="tc-row">
+      <div class="tc-check ${t.done?'done':''}" onclick="event.stopPropagation();toggleTask('${t.id}')">${t.done?'✓':''}</div>
+      <div class="tc-body">
+        <div class="tc-name ${t.done?'done':''}">${esc(t.text)}</div>
+        ${t.step?`<div class="tc-step">▸ ${esc(t.step)}</div>`:''}
+        <div class="tc-meta"><span class="chip ${ec}">${elabel}</span>${tiempo}${tag}</div>
       </div>
-      <button class="btn-del" onclick="event.stopPropagation();delTask('${t.id}')">🗑</button>
+      <button class="tc-del" onclick="event.stopPropagation();delTask('${t.id}')">🗑</button>
     </div>
   </div>`;
 }
-
-function escapeHtml(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-
+function esc(s){return(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function delTask(id){
-  if(!confirm('¿Borrar esta tarea?')) return;
+  if(!confirm('¿Borrar esta tarea?'))return;
   S.tasks=S.tasks.filter(t=>t.id!==id);
-  if(S.cur===id){S.cur=null;S.state={mode:'idle'};cancelarTodasNotifs();}
+  if(S.cur===id){S.cur=null;S.state={mode:'idle'};pararTodo();}
   renderTasks();
 }
-
 function toggleTask(id){
-  const tasks=S.tasks;
-  const t=tasks.find(x=>x.id===id);
-  if(!t) return;
-  if(!t.done){
-    // Completar
-    completarTareaSpecific(id);
-  } else {
-    // Desmarcar
-    t.done=false;
-    delete t.doneAt;
-    S.tasks=tasks;
-    renderTasks();
-  }
+  const tasks=S.tasks,t=tasks.find(x=>x.id===id);if(!t)return;
+  if(!t.done){completarTareaSpecific(id);}
+  else{t.done=false;delete t.doneAt;S.tasks=tasks;renderTasks();}
 }
 
-// ══════════════════════════════════════════════
-// FLUJO DE TAREA: SELECCIONAR → COMENZAR → PAUSAR/CONTINUAR → COMPLETAR
-// ══════════════════════════════════════════════
+// ══════════════ FLUJO TAREA ══════════════
+function pararTodo(){detenerNotifProgreso();detenerPulso();detenerDistraccionWatch();liberarWakeLock();cancelarTodasNotifs();}
+
 function seleccionarTarea(id){
-  // Si había una en progreso, guardar tiempo
-  if(S.state.mode==='working' && S.cur && S.cur!==id){
-    guardarSesion();
-  }
-  S.cur=id;
-  S.state={mode:'selected'};
-  cancelarTodasNotifs();
+  if(S.state.mode==='working'&&S.cur&&S.cur!==id)guardarSesion();
+  S.cur=id;S.state={mode:'selected'};marcarActividad();pararTodo();
   const t=S.tasks.find(x=>x.id===id);
-  if(t){
-    playAnim('alerta');
-    setSpeech(`Tarea seleccionada: "${t.text}". ¡Presiona COMENZAR cuando estés listo!`);
-  }
+  if(t){playAnim('alerta');setSpeech(`Tarea elegida: "${t.text}". ¡Presiona COMENZAR cuando estés listo!`);}
   go('inicio');
 }
-
 function comenzarTarea(){
-  if(!S.cur) return;
-  S.state={mode:'working',start:Date.now(),sessionStart:Date.now()};
+  if(!S.cur)return;
+  S.state={mode:'working',start:Date.now(),sessionStart:Date.now()};marcarActividad();
   playAnim('idle');
   const t=S.tasks.find(x=>x.id===S.cur);
-  if(t){
-    setSpeech(`¡VAMOS! Trabajando en: ${t.step||t.text}. ¡Foco total! 🔥`);
-    iniciarNotifProgreso(t.text);
-  }
-  programarCheckin();
-  iniciarPulso();
-  adquirirWakeLock();
-  renderHome();
+  if(t){setSpeech(`¡VAMOS! ${t.step||t.text}. ¡Foco total! 🔥`);iniciarNotifProgreso(t.text);}
+  programarCheckin();iniciarPulso();adquirirWakeLock();renderHome();
 }
-
 function pausarTarea(){
-  if(S.state.mode!=='working') return;
-  guardarSesion();
-  S.state={mode:'paused'};
-  cancelarTodasNotifs();
-  detenerNotifProgreso();
-  detenerPulso();
-  detenerDistraccionWatch();
-  liberarWakeLock();
-  playAnim('dormido');
-  setSpeech('Pausado. ¡Cuando puedas, sigue! Tu tiempo está guardado.');
-  renderHome();
+  if(S.state.mode!=='working')return;
+  guardarSesion();S.state={mode:'paused'};marcarActividad();
+  pararTodo();playAnim('dormido');
+  setSpeech('Pausado. Tu tiempo está guardado. ¡Cuando puedas, sigue!');renderHome();
 }
-
 function continuarTarea(){
-  if(S.state.mode!=='paused') return;
-  S.state={mode:'working',start:Date.now(),sessionStart:Date.now()};
+  if(S.state.mode!=='paused')return;
+  S.state={mode:'working',start:Date.now(),sessionStart:Date.now()};marcarActividad();
   playAnim('idle');
   const t=S.tasks.find(x=>x.id===S.cur);
-  if(t){
-    setSpeech(`De vuelta a: ${t.text}. ¡Tú puedes! 💪`);
-    iniciarNotifProgreso(t.text);
-  }
-  programarCheckin();
-  iniciarPulso();
-  adquirirWakeLock();
-  renderHome();
+  if(t){setSpeech(`De vuelta a: ${t.text}. ¡Tú puedes! 💪`);iniciarNotifProgreso(t.text);}
+  programarCheckin();iniciarPulso();adquirirWakeLock();renderHome();
 }
-
 function guardarSesion(){
-  if(S.state.mode!=='working') return;
-  const elapsed=Date.now()-S.state.sessionStart;
-  if(elapsed<1000) return; // ignorar sesiones de menos de 1s
-  const tasks=S.tasks;
-  const t=tasks.find(x=>x.id===S.cur);
-  if(t){
-    t.totalMs=(t.totalMs||0)+elapsed;
-    t.sessions=t.sessions||[];
-    t.sessions.push({start:S.state.sessionStart,end:Date.now(),ms:elapsed});
-    S.tasks=tasks;
-  }
-  const st=S.stats;
-  st.focoMs=(st.focoMs||0)+elapsed;
-  S.stats=st;
+  if(S.state.mode!=='working')return;
+  const el=Date.now()-S.state.sessionStart;if(el<1000)return;
+  const tasks=S.tasks,t=tasks.find(x=>x.id===S.cur);
+  if(t){t.totalMs=(t.totalMs||0)+el;t.sessions=t.sessions||[];t.sessions.push({start:S.state.sessionStart,end:Date.now(),ms:el});S.tasks=tasks;}
+  const st=S.stats;st.focoMs=(st.focoMs||0)+el;S.stats=st;
 }
-
-// Flush periódico: guarda el progreso sin terminar la sesión
-// Esto garantiza que si cierras la app abrupto, no pierdes el tiempo
 function flushSesion(){
-  if(S.state.mode!=='working') return;
-  const elapsed=Date.now()-S.state.sessionStart;
-  if(elapsed<5000) return; // mínimo 5s
-  const tasks=S.tasks;
-  const t=tasks.find(x=>x.id===S.cur);
-  if(t){
-    t.totalMs=(t.totalMs||0)+elapsed;
-    t.sessions=t.sessions||[];
-    t.sessions.push({start:S.state.sessionStart,end:Date.now(),ms:elapsed});
-    S.tasks=tasks;
-  }
-  const st=S.stats;
-  st.focoMs=(st.focoMs||0)+elapsed;
-  S.stats=st;
-  // Reiniciar sessionStart para no doblar
-  const ns={...S.state, sessionStart:Date.now()};
-  S.state=ns;
+  if(S.state.mode!=='working')return;
+  const el=Date.now()-S.state.sessionStart;if(el<5000)return;
+  const tasks=S.tasks,t=tasks.find(x=>x.id===S.cur);
+  if(t){t.totalMs=(t.totalMs||0)+el;t.sessions=t.sessions||[];t.sessions.push({start:S.state.sessionStart,end:Date.now(),ms:el});S.tasks=tasks;}
+  const st=S.stats;st.focoMs=(st.focoMs||0)+el;S.stats=st;
+  S.state={...S.state,sessionStart:Date.now()};
 }
-
-function completarActual(){
-  if(!S.cur){alert('Selecciona una tarea primero');return;}
-  completarTareaSpecific(S.cur);
-}
-
+function completarActual(){if(!S.cur){alert('Selecciona una tarea primero');return;}completarTareaSpecific(S.cur);}
 function completarTareaSpecific(id){
-  // Si está trabajando en esa, guardar sesión primero
-  if(S.cur===id && S.state.mode==='working') guardarSesion();
-  const tasks=S.tasks;
-  const t=tasks.find(x=>x.id===id);
-  if(!t) return;
-  t.done=true;
-  t.doneAt=Date.now();
-  S.tasks=tasks;
-  if(S.cur===id){
-    S.cur=null;
-    S.state={mode:'idle'};
-    cancelarTodasNotifs();
-    detenerNotifProgreso();
-    detenerPulso();
-    detenerDistraccionWatch();
-    liberarWakeLock();
-  }
-  const st=S.stats;
-  st.comp=(st.comp||0)+1;
-  S.stats=st;
+  if(S.cur===id&&S.state.mode==='working')guardarSesion();
+  const tasks=S.tasks,t=tasks.find(x=>x.id===id);if(!t)return;
+  t.done=true;t.doneAt=Date.now();S.tasks=tasks;marcarActividad();
+  if(S.cur===id){S.cur=null;S.state={mode:'idle'};pararTodo();}
+  const st=S.stats;st.comp=(st.comp||0)+1;S.stats=st;
   playAnim('celebracion');
-  const tiempo=t.totalMs>0?` Te tomó ${formatTime(t.totalMs)}. `:'';
-  setSpeech(`¡MISIÓN CUMPLIDA! 🎉${tiempo}¡Eres una máquina!`);
+  const tt=t.totalMs>0?` Te tomó ${formatTime(t.totalMs)}.`:'';
+  setSpeech(`¡MISIÓN CUMPLIDA! 🎉${tt} ¡Eres una máquina!`);
   setTimeout(()=>{playAnim('idle');setSpeech(idleMsg())},5000);
-  if(screen==='inicio') renderHome();
-  if(screen==='tareas') renderTasks();
-  if(screen==='stats') renderStats();
+  if(screen==='inicio')renderHome();
+  if(screen==='tareas')renderTasks();
+  if(screen==='stats')renderStats();
 }
-
 function cambiarTarea(){
-  if(S.state.mode==='working') guardarSesion();
-  S.cur=null;
-  S.state={mode:'idle'};
-  cancelarTodasNotifs();
-  detenerNotifProgreso();
-  detenerPulso();
-  detenerDistraccionWatch();
-  liberarWakeLock();
-  playAnim('idle'); setSpeech(idleMsg());
-  go('tareas');
+  if(S.state.mode==='working')guardarSesion();
+  S.cur=null;S.state={mode:'idle'};pararTodo();
+  playAnim('idle');setSpeech(idleMsg());go('tareas');
+}
+function formatTime(ms){if(!ms||ms<60000)return Math.floor(ms/1000)+'s';const m=Math.floor(ms/60000);if(m<60)return m+'m';const h=Math.floor(m/60),mm=m%60;return h+'h '+mm+'m';}
+function formatTimer(ms){if(!ms||ms<0)ms=0;const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),ss=s%60;if(h>0)return`${h}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;return`${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;}
+
+// ══════════════ RING HELPER ══════════════
+function ringHTML(pct,timeStr,label,color){
+  const R=72,C=2*Math.PI*R,off=C*(1-pct);
+  return `<div class="ring-wrap">
+    <svg class="ring-svg" width="172" height="172">
+      <circle class="ring-bg" cx="86" cy="86" r="${R}"></circle>
+      <circle class="ring-fg" cx="86" cy="86" r="${R}" stroke="${color}" stroke-dasharray="${C}" stroke-dashoffset="${off}"></circle>
+    </svg>
+    <div class="ring-center"><div class="ring-time">${timeStr}</div><div class="ring-label">${label}</div></div>
+  </div>`;
 }
 
-function formatTime(ms){
-  if(!ms||ms<60000) return Math.floor(ms/1000)+'s';
-  const m=Math.floor(ms/60000);
-  if(m<60) return m+'m';
-  const h=Math.floor(m/60), mm=m%60;
-  return h+'h '+mm+'m';
-}
-
-// ══════════════════════════════════════════════
-// HOME RENDER
-// ══════════════════════════════════════════════
-function focoLive(){
-  // Tiempo enfocado hoy incluyendo la sesión activa
-  const st=S.stats;
-  let total=st.focoMs||0;
-  if(S.state.mode==='working' && S.state.sessionStart){
-    total+=Date.now()-S.state.sessionStart;
-  }
-  return total;
-}
-
+// ══════════════ HOME RENDER ══════════════
+function focoLive(){let t=S.stats.focoMs||0;if(S.state.mode==='working'&&S.state.sessionStart)t+=Date.now()-S.state.sessionStart;return t;}
 function renderHome(){
-  const st=S.stats, tasks=S.tasks;
+  const st=S.stats,tasks=S.tasks;
   document.getElementById('streak-val').textContent=st.streak;
   document.getElementById('h-comp').textContent=st.comp||0;
   document.getElementById('h-foco').textContent=formatTime(focoLive());
   document.getElementById('h-pend').textContent=tasks.filter(t=>!t.done).length;
+  updateNotifDot();
+  document.getElementById('notif-activate-banner').style.display=Notification.permission!=='granted'?'block':'none';
 
-  // Notif pill
-  updateNotifPill();
+  const state=S.state,mode=state.mode||'idle';
+  const card=document.getElementById('state-card'),content=document.getElementById('state-content');
+  card.className='glass';
 
-  // Notif activate banner (top)
-  const notifBanner=document.getElementById('notif-activate-banner');
-  if(Notification.permission!=='granted'){
-    notifBanner.style.display='block';
-  } else {
-    notifBanner.style.display='none';
-  }
-
-  const state=S.state, mode=state.mode||'idle';
-  const card=document.getElementById('state-card');
-  const content=document.getElementById('state-content');
-  card.className='';
-
-  // Auto-corrige estados inválidos
-  if((mode==='working'||mode==='paused'||mode==='selected') && !S.cur){
-    S.state={mode:'idle'}; return renderHome();
-  }
-  if(mode==='resting' && state.end && state.end<=Date.now()){
-    terminarDescanso(true); return;
-  }
+  if((mode==='working'||mode==='paused'||mode==='selected')&&!S.cur){S.state={mode:'idle'};return renderHome();}
+  if(mode==='resting'&&state.end&&state.end<=Date.now()){terminarDescanso(true);return;}
 
   if(mode==='idle'){
-    const pendCount=tasks.filter(x=>!x.done).length;
-    content.innerHTML=`
-      <div class="state-label" style="color:#3a6080">📌 SIN TAREA ACTIVA</div>
-      <div style="color:#7eb8f7;font-size:0.88em;text-align:center;margin:14px 0;line-height:1.5">
-        ${pendCount>0?`Tienes <strong style="color:#a78bfa">${pendCount} tareas pendientes</strong>.<br>Toca "Tareas" y elige una para comenzar.`:'¡No tienes tareas! Agrega una nueva.'}
-      </div>
-      <button class="btn-action btn-start" onclick="go('tareas')">📋 Ver mis tareas</button>
-    `;
-    if(spCurrent!=='idle' && spCurrent!=='celebracion') playAnim('idle');
+    const p=tasks.filter(x=>!x.done).length;
+    content.innerHTML=`<div class="state-tag st-idle">📌 Sin tarea activa</div>
+      <div style="color:var(--txt2);font-size:0.9em;line-height:1.55;margin:6px 0 14px">${p>0?`Tienes <strong style="color:#c4b5fd">${p} ${p===1?'tarea pendiente':'tareas pendientes'}</strong>. Toca una para concentrarte.`:'¡No tienes tareas! Agrega una nueva.'}</div>
+      <button class="btn btn-grad" onclick="go('tareas')">📋 Ver mis tareas</button>`;
+    if(spCurrent!=='idle'&&spCurrent!=='celebracion')playAnim('idle');
   }
   else if(mode==='selected'){
-    const t=tasks.find(x=>x.id===S.cur);
-    if(!t){S.state={mode:'idle'};S.cur=null;return renderHome();}
-    card.className='selected';
-    content.innerHTML=`
-      <div class="state-label" style="color:#60a5fa">🎯 TAREA SELECCIONADA</div>
-      <div class="task-name-big">${escapeHtml(t.text)}</div>
-      ${t.step?`<div class="task-step-big">→ ${escapeHtml(t.step)}</div>`:''}
-      ${t.totalMs>0?`<div style="text-align:center;font-size:0.8em;color:#7eb8f7;margin:4px 0">Tiempo acumulado: <strong>${formatTime(t.totalMs)}</strong></div>`:''}
-      <button class="btn-action btn-start" onclick="comenzarTarea()">▶️ COMENZAR TAREA</button>
-      <button class="btn-action btn-secondary-action" onclick="cambiarTarea()">Cambiar de tarea</button>
-    `;
+    const t=tasks.find(x=>x.id===S.cur);if(!t){S.state={mode:'idle'};S.cur=null;return renderHome();}
+    card.classList.add('s-selected');
+    content.innerHTML=`<div class="state-tag st-selected">🎯 Tarea seleccionada</div>
+      <div class="task-title">${esc(t.text)}</div>
+      ${t.step?`<div class="task-substep">${esc(t.step)}</div>`:''}
+      ${t.totalMs>0?`<div style="font-size:0.8em;color:var(--txt2);margin:6px 0">Tiempo acumulado: <strong>${formatTime(t.totalMs)}</strong></div>`:''}
+      <button class="btn btn-grad" style="margin-top:10px" onclick="comenzarTarea()">▶️ COMENZAR TAREA</button>
+      <button class="btn btn-ghost" onclick="cambiarTarea()">Cambiar de tarea</button>`;
   }
   else if(mode==='working'){
-    const t=tasks.find(x=>x.id===S.cur);
-    if(!t){S.state={mode:'idle'};S.cur=null;return renderHome();}
-    card.className='working';
-    const sessionMs=Date.now()-state.sessionStart;
-    const totalMs=(t.totalMs||0)+sessionMs;
-    content.innerHTML=`
-      <div class="state-label" style="color:#22c55e">💪 TRABAJANDO</div>
-      <div class="task-name-big">${escapeHtml(t.text)}</div>
-      ${t.step?`<div class="task-step-big">→ ${escapeHtml(t.step)}</div>`:''}
-      <div id="big-timer">${formatTimerMs(totalMs)}</div>
-      <div class="timer-sub">⏱️ Tiempo total enfocado</div>
-      <button class="btn-action btn-work" onclick="completarActual()">✅ COMPLETAR TAREA</button>
-      <button class="btn-action btn-pause" onclick="pausarTarea()">⏸ Pausar</button>
-      <button class="btn-action btn-distract-action" onclick="openDistract()">🛑 Me distrajé / Necesito descanso</button>
-    `;
+    const t=tasks.find(x=>x.id===S.cur);if(!t){S.state={mode:'idle'};S.cur=null;return renderHome();}
+    card.classList.add('s-working');
+    const sessionMs=Date.now()-state.sessionStart,totalMs=(t.totalMs||0)+sessionMs;
+    // Ring: progreso hacia el siguiente pomodoro (25 min) ciclo visual
+    const cyc=(sessionMs%(25*60000))/(25*60000);
+    content.innerHTML=`<div class="state-tag st-working">💪 Trabajando</div>
+      <div class="task-title">${esc(t.text)}</div>
+      ${t.step?`<div class="task-substep">${esc(t.step)}</div>`:''}
+      ${ringHTML(cyc,formatTimer(totalMs),'enfocado','url(#gw)')}
+      <svg width="0" height="0"><defs><linearGradient id="gw" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#10b981"/><stop offset="1" stop-color="#059669"/></linearGradient></defs></svg>
+      <button class="btn btn-work" onclick="completarActual()">✅ COMPLETAR TAREA</button>
+      <button class="btn btn-warn" onclick="pausarTarea()">⏸ Pausar</button>
+      <button class="btn btn-danger-ghost" onclick="openDistract()">🛑 Me distrajé / Descanso</button>`;
   }
   else if(mode==='paused'){
-    const t=tasks.find(x=>x.id===S.cur);
-    if(!t){S.state={mode:'idle'};S.cur=null;return renderHome();}
-    card.className='paused';
-    content.innerHTML=`
-      <div class="state-label" style="color:#f59e0b">⏸ PAUSADA</div>
-      <div class="task-name-big">${escapeHtml(t.text)}</div>
-      ${t.step?`<div class="task-step-big">→ ${escapeHtml(t.step)}</div>`:''}
-      <div id="big-timer" class="paused">${formatTimerMs(t.totalMs||0)}</div>
-      <div class="timer-sub">⏱️ Tiempo acumulado</div>
-      <button class="btn-action btn-resume" onclick="continuarTarea()">▶️ Continuar</button>
-      <button class="btn-action btn-work" onclick="completarActual()">✅ Completar tarea</button>
-      <button class="btn-action btn-secondary-action" onclick="cambiarTarea()">Cambiar de tarea</button>
-    `;
+    const t=tasks.find(x=>x.id===S.cur);if(!t){S.state={mode:'idle'};S.cur=null;return renderHome();}
+    card.classList.add('s-paused');
+    content.innerHTML=`<div class="state-tag st-paused">⏸ Pausada</div>
+      <div class="task-title">${esc(t.text)}</div>
+      ${t.step?`<div class="task-substep">${esc(t.step)}</div>`:''}
+      ${ringHTML(1,formatTimer(t.totalMs||0),'acumulado','#f59e0b')}
+      <button class="btn btn-work" onclick="continuarTarea()">▶️ Continuar</button>
+      <button class="btn btn-grad" onclick="completarActual()">✅ Completar tarea</button>
+      <button class="btn btn-ghost" onclick="cambiarTarea()">Cambiar de tarea</button>`;
   }
   else if(mode==='resting'){
-    const remaining=Math.max(0,state.end-Date.now());
-    card.className='resting';
-    const m=Math.floor(remaining/60000), s=Math.floor((remaining%60000)/1000);
-    content.innerHTML=`
-      <div class="state-label" style="color:#a78bfa">☕ DESCANSANDO</div>
-      <div style="text-align:center;color:#7eb8f7;font-size:0.88em;margin-top:6px">Te avisaré con sonido cuando termine</div>
-      <div id="big-timer" class="resting">${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}</div>
-      <div class="timer-sub">⏰ Tiempo restante</div>
-      <button class="btn-action btn-resume" onclick="terminarDescanso(false)">▶️ Volver al trabajo</button>
-    `;
+    const rem=Math.max(0,state.end-Date.now()),total=state.duration*60000;
+    card.classList.add('s-resting');
+    content.innerHTML=`<div class="state-tag st-resting">☕ Descansando</div>
+      <div style="text-align:center;color:var(--txt2);font-size:0.85em;margin-top:4px">Te avisaré con sonido cuando termine</div>
+      ${ringHTML(rem/total,formatTimer(rem),'restante','#a855f7')}
+      <button class="btn btn-rest" onclick="terminarDescanso(false)">▶️ Volver al trabajo</button>`;
   }
 }
-
-function formatTimerMs(ms){
-  if(!ms||ms<0) ms=0;
-  const totalSec=Math.floor(ms/1000);
-  const h=Math.floor(totalSec/3600);
-  const m=Math.floor((totalSec%3600)/60);
-  const s=totalSec%60;
-  if(h>0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-}
-
-// Refrescar home cada segundo
 let homeRefresh=null;
-function startHomeRefresh(){
-  if(homeRefresh) clearInterval(homeRefresh);
-  homeRefresh=setInterval(()=>{
-    if(screen==='inicio'){
-      const mode=S.state.mode;
-      if(mode==='working' || mode==='resting'){
-        renderHome();
-      }
-    }
-  },1000);
-}
+function startHomeRefresh(){if(homeRefresh)clearInterval(homeRefresh);homeRefresh=setInterval(()=>{if(screen==='inicio'){const m=S.state.mode;if(m==='working'||m==='resting')renderHome();}},1000);}
 
-// ══════════════════════════════════════════════
-// NOTIF PILL & SETTINGS
-// ══════════════════════════════════════════════
-function updateNotifPill(){
-  const pill=document.getElementById('notif-status');
-  if(!('Notification' in window)){pill.textContent='🔔 N/D';return;}
+// ══════════════ NOTIF DOT ══════════════
+function updateNotifDot(){
+  const d=document.getElementById('notif-dot');if(!('Notification'in window)){d.textContent='🔕';return;}
   const p=Notification.permission;
-  if(p==='granted'){pill.textContent='🔔 ON';pill.className='notif-pill on';}
-  else if(p==='denied'){pill.textContent='🔔 BLOQ';pill.className='notif-pill off';}
-  else {pill.textContent='🔔 OFF';pill.className='notif-pill off';}
+  d.className='notif-dot '+(p==='granted'?'on':'off');
 }
-function abrirNotifSettings(){
-  if(Notification.permission==='granted'){
-    showBanner('🔔 Notificaciones activas','Todo bien. Te avisaré con sonido cuando sea necesario.',false);
-  } else if(Notification.permission==='denied'){
-    alert('Las notificaciones están BLOQUEADAS por el navegador.\n\nVe a: Configuración del celular → Apps → Chrome (o Focus si la instalaste) → Notificaciones → Permitir.');
-  } else {
-    activarNotif();
-  }
+function abrirNotifInfo(){
+  if(Notification.permission==='granted')showBanner('🔔','Notificaciones activas','Te avisaré con sonido cuando sea necesario.',false);
+  else if(Notification.permission==='denied')alert('Notificaciones BLOQUEADAS.\n\nConfiguración del celular → Apps → Chrome (o Focus) → Notificaciones → Permitir.');
+  else activarNotif();
 }
 
-// ══════════════════════════════════════════════
-// MASCOT
-// ══════════════════════════════════════════════
-const MSGS=[
-  '¡Listo para ayudarte! Toca una tarea para empezar.',
-  'Cada tarea completada es una victoria. ¡Vamos!',
-  'Solo necesitas empezar. El resto viene solo.',
-  '¡Tú puedes! Un paso a la vez.',
-  'Mega Man nunca se rindió. ¡Tú tampoco!',
-  'Respira. Enfócate. ¡Adelante!'
-];
+// ══════════════ MASCOT ══════════════
+const MSGS=['¡Listo! Toca una tarea para empezar.','Cada tarea completada es una victoria. ¡Vamos!','Solo necesitas empezar. El resto viene solo.','¡Tú puedes! Un paso a la vez.','Mega Man nunca se rindió. ¡Tú tampoco!','Respira. Enfócate. ¡Adelante!'];
 function idleMsg(){return MSGS[Math.floor(Math.random()*MSGS.length)]}
-function mascotTap(){
-  const m=['¡Oye! ¡Aquí estoy! 💪','¿La tarea no se hace sola, no?','¡Recuerda: solo el primer paso!','¡Vamos! ¡Tú puedes más de lo que crees!','¡Mega Man está contigo!'];
-  setSpeech(m[Math.floor(Math.random()*m.length)]);
-}
-function checkMascot(){
-  // Mensajes según el tiempo en estado
-  const state=S.state;
-  if(state.mode==='idle'){
-    setSpeech(idleMsg());
-  }
-}
+function mascotTap(){const m=['¡Oye! ¡Aquí estoy! 💪','¿La tarea no se hace sola, eh?','¡Recuerda: solo el primer paso!','¡Vales más de lo que crees!','¡Mega Man está contigo!'];setSpeech(m[Math.floor(Math.random()*m.length)]);}
+function demoAnim(name){playAnim(name);const m={idle:'Idle: relajado, listo para la acción.',alerta:'Señalando: te marca algo importante.',urgente:'Urgente: ¡actúa YA!',celebracion:'Celebración: ¡tarea cumplida! 🎉',dormido:'Dormido: descansando.'};setSpeech(m[name]||'');go('inicio');}
 
-// ══════════════════════════════════════════════
-// DEMO ANIMACIONES
-// ══════════════════════════════════════════════
-function demoAnim(name){
-  playAnim(name);
-  const msgs={
-    idle:'Idle: caminando relajado, listo para la acción.',
-    alerta:'Señalando: te marca una dirección o una tarea.',
-    urgente:'Urgente: ¡es momento de actuar YA!',
-    celebracion:'Celebración: ¡tarea completada! 🎉',
-    dormido:'Dormido: descansando o esperando.'
-  };
-  setSpeech(msgs[name]||'');
-  go('inicio');
-}
-
-// ══════════════════════════════════════════════
-// QUÉ HAGO AHORA
-// ══════════════════════════════════════════════
-function openQueHago(){document.getElementById('modal-quehago').classList.add('show');playModalAnim('modal-mascot-quehago','alerta',95);}
-function closeQueHago(){document.getElementById('modal-quehago').classList.remove('show');stopModalAnim('modal-mascot-quehago');}
+// ══════════════ QUÉ HAGO ══════════════
+function openQueHago(){document.getElementById('modal-quehago').classList.add('show');playModalAnim('ms-quehago','alerta');}
+function closeQueHago(){document.getElementById('modal-quehago').classList.remove('show');stopModalAnim('ms-quehago');}
 function calcTask(){
   closeQueHago();
   const tasks=S.tasks.filter(t=>!t.done);
-  if(!tasks.length){
-    setSpeech('¡No tienes tareas pendientes! ¡Eres increíble!');
-    playAnim('celebracion');
-    setTimeout(()=>{playAnim('idle');setSpeech(idleMsg())},3000);
-    return;
-  }
-  let t=tasks.find(x=>x.energy===qeSel&&x.due==='hoy');
-  if(!t) t=tasks.find(x=>x.energy===qeSel);
-  if(!t) t=tasks.find(x=>x.due==='hoy');
-  if(!t) t=tasks[0];
+  if(!tasks.length){setSpeech('¡No tienes tareas pendientes! ¡Increíble!');playAnim('celebracion');setTimeout(()=>{playAnim('idle');setSpeech(idleMsg())},3000);return;}
+  let t=tasks.find(x=>x.energy===qeSel&&x.due==='hoy')||tasks.find(x=>x.energy===qeSel)||tasks.find(x=>x.due==='hoy')||tasks[0];
   seleccionarTarea(t.id);
 }
 
-// ══════════════════════════════════════════════
-// DISTRACCIÓN
-// ══════════════════════════════════════════════
+// ══════════════ DISTRACCIÓN ══════════════
 function openDistract(){
   const t=S.cur?S.tasks.find(x=>x.id===S.cur):null;
-  const el=document.getElementById('distract-info');
-  el.innerHTML=t?`<strong style="color:#7eb8f7">Tu tarea actual:</strong><br>${escapeHtml(t.text)}${t.step?`<br><span style="color:#60a5fa">→ ${escapeHtml(t.step)}</span>`:''}`:
-    '<span style="color:#3a6080">No tienes tarea activa.</span>';
+  document.getElementById('distract-info').innerHTML=t?`<strong style="color:#c4b5fd">Tu tarea actual:</strong><br>${esc(t.text)}${t.step?`<br><span style="color:var(--cyan)">▸ ${esc(t.step)}</span>`:''}`:'<span style="color:var(--txt3)">No tienes tarea activa.</span>';
   document.getElementById('modal-distract').classList.add('show');
-  playModalAnim('modal-mascot-distract','alerta',95);
-  playAnim('alerta');
-  setSpeech('¡Alto! Reconocer la distracción ya es el primer paso. ¿Qué decides?');
+  playModalAnim('ms-distract','alerta');playAnim('alerta');
+  setSpeech('¡Alto! Reconocer la distracción ya es el primer paso.');
 }
-function closeDistract(){
-  document.getElementById('modal-distract').classList.remove('show');
-  stopModalAnim('modal-mascot-distract');
-  if(S.state.mode==='working') playAnim('idle');
-  else playAnim('idle');
-}
+function closeDistract(){document.getElementById('modal-distract').classList.remove('show');stopModalAnim('ms-distract');playAnim('idle');}
 function volverTrabajo(){
-  closeDistract();
-  // Si estaba pausado, reanudar
-  if(S.state.mode==='paused' && S.cur){
-    continuarTarea();
-  } else if(S.cur && S.state.mode!=='working'){
-    comenzarTarea();
-  }
+  closeDistract();marcarActividad();
+  if(S.state.mode==='paused'&&S.cur)continuarTarea();
+  else if(S.cur&&S.state.mode!=='working')comenzarTarea();
   const t=S.cur?S.tasks.find(x=>x.id===S.cur):null;
   setSpeech(t?`¡Eso! De vuelta a: ${t.step||t.text}`:'¡Volviste! Elige una tarea.');
 }
 
-// ══════════════════════════════════════════════
-// SISTEMA DE DESCANSO
-// ══════════════════════════════════════════════
-function openBreak(){
-  closeDistract();
-  document.getElementById('modal-break').classList.add('show');
-  playModalAnim('modal-mascot-break','dormido',95);
-}
-function closeBreak(){
-  document.getElementById('modal-break').classList.remove('show');
-  stopModalAnim('modal-mascot-break');
-}
-function iniciarDescanso(minutes){
+// ══════════════ DESCANSO ══════════════
+function openBreak(){closeDistract();document.getElementById('modal-break').classList.add('show');playModalAnim('ms-break','dormido');}
+function closeBreak(){document.getElementById('modal-break').classList.remove('show');stopModalAnim('ms-break');}
+function iniciarDescanso(min){
   closeBreak();
-  // Pausar trabajo si está en curso
-  if(S.state.mode==='working'){
-    guardarSesion();
-    detenerNotifProgreso();
-    detenerPulso();
-    detenerDistraccionWatch();
-    liberarWakeLock();
-  }
-  const end=Date.now()+minutes*60000;
-  // Guardar la tarea actual para volver
-  const savedCur=S.cur;
-  S.state={mode:'resting',start:Date.now(),end:end,duration:minutes,returnTo:savedCur};
-  playAnim('dormido');
-  setSpeech(`Descanso de ${minutes<60?minutes+' minutos':'1 hora'}. ¡Aprovéchalo!`);
+  if(S.state.mode==='working'){guardarSesion();detenerNotifProgreso();detenerPulso();detenerDistraccionWatch();liberarWakeLock();}
+  const end=Date.now()+min*60000,savedCur=S.cur;
+  S.state={mode:'resting',start:Date.now(),end,duration:min,returnTo:savedCur};marcarActividad();
+  playAnim('dormido');setSpeech(`Descanso de ${min<60?min+' min':'1 hora'}. ¡Aprovéchalo!`);
   cancelarTodasNotifs();
-  // Notif programada del fin del descanso (con sonido fuerte)
-  programarNotif('focus-break-end','⏰ ¡Descanso terminado!',`Pasaron ${minutes} min. ¡Vuelve al trabajo!`,minutes*60000,true,false);
-  // Notif persistente con cuenta regresiva
-  iniciarNotifDescanso(minutes);
-  showBanner('☕ Descanso iniciado',`Te avisaré en ${minutes} minutos`,false);
+  programarNotif('focus-break-end','⏰ ¡Descanso terminado!',`Pasaron ${min} min. ¡Vuelve al trabajo!`,min*60000,true,false);
+  iniciarNotifDescanso(min);
+  showBanner('☕','Descanso iniciado',`Te avisaré en ${min} minutos`,false);
   renderHome();
 }
 function terminarDescanso(auto){
-  const returnTo=S.state.returnTo;
-  cancelarTodasNotifs();
-  detenerNotifDescanso();
-  if(returnTo && S.tasks.find(t=>t.id===returnTo && !t.done)){
-    // Restaurar selección
-    S.cur=returnTo;
-    S.state={mode:'paused'}; // queda pausada para que el user pulse continuar
-  } else {
-    S.state={mode:'idle'};
-    S.cur=null;
-  }
-  if(auto){
-    playAnim('urgente');
-    setSpeech('¡Descanso terminado! ¿Continuamos?');
-    notificarLocal('⏰ ¡Descanso terminado!','¡Vuelve al trabajo! Toca para abrir Focus.',true,false);
-  } else {
-    playAnim('idle'); setSpeech('¡Bien! De vuelta.');
-  }
+  const rt=S.state.returnTo;
+  cancelarTodasNotifs();detenerNotifDescanso();
+  if(rt&&S.tasks.find(t=>t.id===rt&&!t.done)){S.cur=rt;S.state={mode:'paused'};}
+  else{S.state={mode:'idle'};S.cur=null;}
+  if(auto){playAnim('urgente');setSpeech('¡Descanso terminado! ¿Continuamos?');notificarLocal('⏰ ¡Descanso terminado!','¡Vuelve al trabajo! Toca para abrir Focus.',true,false);}
+  else{playAnim('idle');setSpeech('¡Bien! De vuelta.');}
   renderHome();
 }
 
-// ══════════════════════════════════════════════
-// STATS
-// ══════════════════════════════════════════════
+// ══════════════ STATS ══════════════
 function renderStats(){
-  const st=S.stats, tasks=S.tasks, cfg=S.cfg;
+  const st=S.stats,tasks=S.tasks,cfg=S.cfg;
   document.getElementById('ss-streak').textContent=st.streak;
   document.getElementById('ss-comp').textContent=st.comp||0;
   document.getElementById('ss-foco').textContent=formatTime(focoLive());
   document.getElementById('ss-distr').textContent=st.distracciones||0;
   document.getElementById('sel-interval').value=cfg.interval||30;
   document.getElementById('sel-pulse').value=String(cfg.pulse??5);
+  document.getElementById('sel-idle').value=String(cfg.idle??30);
   document.getElementById('sel-objetivo').value=String(cfg.objetivoMin||120);
 
-  // Objetivo diario
-  const objMs=(cfg.objetivoMin||120)*60000;
-  const focoMs=focoLive();
-  const pct=Math.min(100,Math.round(focoMs/objMs*100));
-  document.getElementById('obj-bar').style.width=pct+'%';
-  const objH=Math.floor((cfg.objetivoMin||120)/60),objM=(cfg.objetivoMin||120)%60;
-  const objStr=objH>0?objH+'h'+(objM?' '+objM+'m':''):objM+'m';
-  document.getElementById('obj-text').textContent=`${formatTime(focoMs)} de ${objStr} (${pct}%)`;
-  if(pct>=100){document.getElementById('obj-text').innerHTML+=' 🎉';}
+  const objMs=(cfg.objetivoMin||120)*60000,fMs=focoLive(),pct=Math.min(100,Math.round(fMs/objMs*100));
+  document.getElementById('obj-fill').style.width=pct+'%';
+  const oh=Math.floor((cfg.objetivoMin||120)/60),om=(cfg.objetivoMin||120)%60,oStr=oh>0?oh+'h'+(om?' '+om+'m':''):om+'m';
+  document.getElementById('obj-text').innerHTML=`${formatTime(fMs)} de ${oStr} · ${pct}%`+(pct>=100?' 🎉':'');
 
-  // Toggle switches
-  const invasivo=cfg.invasivo!==false;
-  document.getElementById('chk-invasivo').checked=invasivo;
-  document.getElementById('sw-invasivo').style.background=invasivo?'#ef4444':'#0a1525';
-  document.getElementById('sw-invasivo-knob').style.left=invasivo?'25px':'3px';
+  // Toggles
+  setToggle('tg-invasivo',cfg.invasivo!==false);
+  setToggle('tg-wakelock',cfg.wakeLock!==false);
 
-  const wl=cfg.wakeLock!==false;
-  document.getElementById('chk-wakelock').checked=wl;
-  document.getElementById('sw-wakelock').style.background=wl?'#7c3aed':'#0a1525';
-  document.getElementById('sw-wakelock-knob').style.left=wl?'25px':'3px';
-
-  // Historial de tareas con tiempo (hoy)
+  // Historial
   const today=new Date().setHours(0,0,0,0);
-  const tasksHoy=tasks.filter(t=>{
-    // Tareas con sesiones hoy o completadas hoy
-    if(t.doneAt && t.doneAt>=today) return true;
-    if(t.sessions && t.sessions.some(s=>s.start>=today)) return true;
-    if(S.cur===t.id) return true;
-    return false;
-  });
+  const th=tasks.filter(t=>(t.doneAt&&t.doneAt>=today)||(t.sessions&&t.sessions.some(s=>s.start>=today))||S.cur===t.id);
   const hist=document.getElementById('task-history');
-  if(tasksHoy.length===0){
-    hist.innerHTML='<div style="color:#3a6080;font-size:0.82em;padding:10px 0;text-align:center">Aún no has trabajado en tareas hoy.</div>';
-  } else {
-    hist.innerHTML=tasksHoy.map(t=>{
-      // Calcular tiempo de hoy
-      let msHoy=0;
-      if(t.sessions) msHoy=t.sessions.filter(s=>s.start>=today).reduce((a,b)=>a+b.ms,0);
-      // Si está actualmente trabajando, sumar la sesión activa
-      if(S.cur===t.id && S.state.mode==='working') msHoy+=Date.now()-S.state.sessionStart;
-      return `<div class="task-history">
-        <div class="th-name">${t.done?'✅':S.cur===t.id?'🎯':'📋'} ${escapeHtml(t.text)}</div>
-        <div class="th-time ${!t.done?'pending':''}">${formatTime(msHoy)}</div>
-      </div>`;
-    }).join('');
-  }
+  if(!th.length){hist.innerHTML='<div style="color:var(--txt3);font-size:0.82em;padding:8px 0;text-align:center">Aún no has trabajado en tareas hoy.</div>';}
+  else{hist.innerHTML=th.map(t=>{let ms=0;if(t.sessions)ms=t.sessions.filter(s=>s.start>=today).reduce((a,b)=>a+b.ms,0);if(S.cur===t.id&&S.state.mode==='working')ms+=Date.now()-S.state.sessionStart;return`<div class="thist"><div class="n">${t.done?'✅':S.cur===t.id?'🎯':'📋'} ${esc(t.text)}</div><div class="t ${!t.done?'pend':''}">${formatTime(ms)}</div></div>`;}).join('');}
 
   // Notif section
   const ns=document.getElementById('notif-section');
-  if(Notification.permission==='granted'){
-    ns.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:8px 0;color:#22c55e;font-size:0.88em;font-weight:700">✅ Notificaciones activadas</div>';
-  } else if(Notification.permission==='denied'){
-    ns.innerHTML='<div style="padding:10px;background:#1a0505;border:1px solid #3a1010;border-radius:8px;color:#ef4444;font-size:0.82em;line-height:1.4">⚠️ <strong>Notificaciones bloqueadas.</strong><br>Ve a: Configuración celular → Apps → Chrome → Notificaciones → Permitir.</div>';
-  } else {
-    ns.innerHTML='<button class="btn-primary" onclick="activarNotif()" style="background:linear-gradient(135deg,#ef4444,#b91c1c);padding:11px;font-size:0.9em">🔔 ACTIVAR NOTIFICACIONES</button>';
-  }
+  if(Notification.permission==='granted')ns.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:6px 0 4px;color:#34d399;font-size:0.86em;font-weight:700">✅ Notificaciones activadas</div>';
+  else if(Notification.permission==='denied')ns.innerHTML='<div style="padding:11px;background:rgba(244,63,94,0.08);border:1px solid rgba(244,63,94,0.2);border-radius:11px;color:#fb7185;font-size:0.8em;line-height:1.5">⚠️ <strong>Bloqueadas.</strong> Configuración celular → Apps → Chrome → Notificaciones → Permitir.</div>';
+  else ns.innerHTML='<button class="btn btn-danger-ghost btn-sm" onclick="activarNotif()" style="background:var(--grad-danger);color:#fff;border:none">🔔 ACTIVAR NOTIFICACIONES</button>';
 }
-
-function saveInterval(){
-  const cfg=S.cfg; cfg.interval=parseInt(document.getElementById('sel-interval').value);
-  S.cfg=cfg; restartCheckin();
-}
-function savePulse(){
-  const cfg=S.cfg; cfg.pulse=parseInt(document.getElementById('sel-pulse').value);
-  S.cfg=cfg;
-  detenerPulso();
-  if(cfg.pulse>0 && S.state.mode==='working') iniciarPulso();
-}
-function saveInvasivo(){
-  const cfg=S.cfg; cfg.invasivo=document.getElementById('chk-invasivo').checked;
-  S.cfg=cfg; renderStats();
-}
-function saveWakeLock(){
-  const cfg=S.cfg; cfg.wakeLock=document.getElementById('chk-wakelock').checked;
-  S.cfg=cfg;
-  if(cfg.wakeLock && S.state.mode==='working') adquirirWakeLock();
-  else liberarWakeLock();
-  renderStats();
-}
-function saveObjetivo(){
-  const cfg=S.cfg; cfg.objetivoMin=parseInt(document.getElementById('sel-objetivo').value);
-  S.cfg=cfg; renderStats();
-}
-function resetDay(){
-  if(!confirm('¿Resetear las estadísticas de hoy?')) return;
-  const st=S.stats; st.comp=0; st.focoMs=0; S.stats=st;
-  renderStats(); renderHome();
-}
-function clearAll(){
-  if(confirm('¿Borrar TODOS los datos? Esto NO se puede deshacer.')){
-    localStorage.clear(); location.reload();
-  }
-}
+function setToggle(id,on){const t=document.getElementById(id);if(on)t.classList.add('on');else t.classList.remove('on');t.querySelector('input').checked=on;}
+function saveInterval(){const c=S.cfg;c.interval=parseInt(document.getElementById('sel-interval').value);S.cfg=c;restartCheckin();}
+function savePulse(){const c=S.cfg;c.pulse=parseInt(document.getElementById('sel-pulse').value);S.cfg=c;detenerPulso();if(c.pulse>0&&S.state.mode==='working')iniciarPulso();}
+function saveIdle(){const c=S.cfg;c.idle=parseInt(document.getElementById('sel-idle').value);S.cfg=c;}
+function saveObjetivo(){const c=S.cfg;c.objetivoMin=parseInt(document.getElementById('sel-objetivo').value);S.cfg=c;renderStats();}
+function toggleInvasivo(){const c=S.cfg;c.invasivo=!(c.invasivo!==false);S.cfg=c;renderStats();}
+function toggleWakeLock(){const c=S.cfg;c.wakeLock=!(c.wakeLock!==false);S.cfg=c;if(c.wakeLock&&S.state.mode==='working')adquirirWakeLock();else liberarWakeLock();renderStats();}
+function resetDay(){if(!confirm('¿Resetear estadísticas de hoy?'))return;const s=S.stats;s.comp=0;s.focoMs=0;s.distracciones=0;S.stats=s;renderStats();renderHome();}
+function clearAll(){if(confirm('¿Borrar TODOS los datos? No se puede deshacer.')){localStorage.clear();location.reload();}}
 function testNotif(){
-  if(Notification.permission!=='granted'){
-    alert('Primero activa las notificaciones (botón rojo arriba).');
-    return;
-  }
-  notificarLocal('🤖 Focus — Prueba','¡Las notificaciones funcionan! Sonido + vibración.',true,true);
-  programarNotif('focus-test','⏰ Prueba programada','Te llegó después de 10s — cierra la app para confirmar.',10000,true,false);
-  playAnim('alerta');
-  setSpeech('¡Prueba enviada! En 10s te llegará otra (puedes cerrar la app).');
+  if(Notification.permission!=='granted'){alert('Primero activa las notificaciones.');return;}
+  notificarLocal('🤖 Focus — Prueba','¡Funcionan! Sonido + vibración activos.',true,true);
+  programarNotif('focus-test','⏰ Prueba programada','Llegó tras 10s. ¡Cierra la app para confirmar!',10000,true,false);
+  playAnim('alerta');setSpeech('¡Prueba enviada! En 10s llega otra (puedes cerrar la app).');
   setTimeout(()=>{if(spCurrent!=='working')playAnim('idle');setSpeech(idleMsg())},5000);
 }
 
-// ══════════════════════════════════════════════
-// NOTIFICATIONS
-// ══════════════════════════════════════════════
+// ══════════════ NOTIFICACIONES ══════════════
 async function activarNotif(){
-  if(!('Notification' in window)){alert('Tu navegador no soporta notificaciones');return;}
-  if(Notification.permission==='denied'){
-    alert('Las notificaciones están BLOQUEADAS.\n\nVe a: Configuración celular → Apps → Chrome (o Focus) → Notificaciones → Permitir. Luego recarga.');
-    return;
-  }
+  if(!('Notification'in window)){alert('Tu navegador no soporta notificaciones');return;}
+  if(Notification.permission==='denied'){alert('BLOQUEADAS. Configuración celular → Apps → Chrome → Notificaciones → Permitir. Luego recarga.');return;}
   const p=await Notification.requestPermission();
   if(p==='granted'){
-    const cfg=S.cfg; cfg.notif=true; S.cfg=cfg;
-    notificarLocal('✅ ¡Notificaciones activadas!','Focus te avisará con sonido cuando estés distraído.',false,false);
-    showBanner('✅ ¡Listo!','Te avisaré con sonido y vibración.',false);
-    if(S.state.mode==='working') programarCheckin();
-    renderHome();
-    if(screen==='stats') renderStats();
-  } else {
-    alert('Sin permiso. Si no salió el popup, ve a Configuración del celular → Apps → Chrome → Notificaciones.');
-  }
+    const c=S.cfg;c.notif=true;S.cfg=c;
+    notificarLocal('✅ ¡Notificaciones activadas!','Focus te cuidará las espaldas.',false,false);
+    showBanner('✅','¡Listo!','Te avisaré con sonido y vibración.',false);
+    if(S.state.mode==='working')programarCheckin();
+    renderHome();if(screen==='stats')renderStats();
+  }else alert('Sin permiso. Si no salió el popup: Configuración celular → Apps → Chrome → Notificaciones.');
 }
-
-function notificarLocal(title, body, urgent, withActions){
-  if(Notification.permission!=='granted') return;
+function notificarLocal(title,body,urgent,actions){
+  if(Notification.permission!=='granted')return;
   navigator.serviceWorker.ready.then(reg=>{
-    const opts={
-      body,
-      icon:'./icon-192.png',
-      badge:'./icon-192.png',
-      vibrate:urgent?[300,100,300,100,300,100,500]:[200,100,200],
-      requireInteraction:urgent,
-      silent:false,
-      tag:'focus-'+Date.now(),
-      renotify:true,
-      timestamp:Date.now()
-    };
-    if(withActions){
-      opts.actions=[
-        {action:'si',title:'✅ Sí, trabajando'},
-        {action:'no',title:'❌ Me perdí'}
-      ];
-    }
-    reg.showNotification(title,opts);
-  }).catch(()=>{showBanner(title,body,urgent);});
+    const o={body,icon:'./icon-192.png',badge:'./icon-192.png',vibrate:urgent?[300,100,300,100,300,100,500]:[200,100,200],requireInteraction:urgent,silent:false,tag:'focus-'+Date.now(),renotify:true,timestamp:Date.now()};
+    if(actions)o.actions=[{action:'si',title:'✅ Sí, trabajando'},{action:'no',title:'❌ Me perdí'}];
+    reg.showNotification(title,o);
+  }).catch(()=>showBanner('🤖',title,body,urgent));
 }
-
-function programarNotif(id,title,body,delayMs,urgent,withActions){
-  if(Notification.permission!=='granted') return;
-  navigator.serviceWorker.ready.then(reg=>{
-    const ctrl=reg.active||navigator.serviceWorker.controller;
-    if(ctrl) ctrl.postMessage({type:'SCHEDULE',id,title,body,delayMs,urgent,actions:withActions});
-  }).catch(()=>{});
+function programarNotif(id,title,body,delayMs,urgent,actions){
+  if(Notification.permission!=='granted')return;
+  navigator.serviceWorker.ready.then(reg=>{const c=reg.active||navigator.serviceWorker.controller;if(c)c.postMessage({type:'SCHEDULE',id,title,body,delayMs,urgent,actions});}).catch(()=>{});
 }
-function cancelarNotif(id){
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.ready.then(reg=>{
-      const ctrl=reg.active||navigator.serviceWorker.controller;
-      if(ctrl) ctrl.postMessage({type:'CANCEL',id});
-    }).catch(()=>{});
-  }
-}
-function cancelarTodasNotifs(){
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.ready.then(reg=>{
-      const ctrl=reg.active||navigator.serviceWorker.controller;
-      if(ctrl) ctrl.postMessage({type:'CANCEL_ALL'});
-    }).catch(()=>{});
-  }
-}
+function cancelarNotif(id){if('serviceWorker'in navigator)navigator.serviceWorker.ready.then(reg=>{const c=reg.active||navigator.serviceWorker.controller;if(c)c.postMessage({type:'CANCEL',id});}).catch(()=>{});}
+function cancelarTodasNotifs(){if('serviceWorker'in navigator)navigator.serviceWorker.ready.then(reg=>{const c=reg.active||navigator.serviceWorker.controller;if(c)c.postMessage({type:'CANCEL_ALL'});}).catch(()=>{});}
 function programarCheckin(){
-  if(Notification.permission!=='granted') return;
-  if(S.state.mode!=='working') return;
-  const t=S.cur?S.tasks.find(x=>x.id===S.cur&&!x.done):null;
-  if(!t) return;
-  const ms=(S.cfg.interval||30)*60*1000;
-  programarNotif('focus-checkin','⚡ Check-in — Focus',`¿Sigues con: "${t.text}"?`,ms,true,true);
+  if(Notification.permission!=='granted'||S.state.mode!=='working')return;
+  const t=S.cur?S.tasks.find(x=>x.id===S.cur&&!x.done):null;if(!t)return;
+  programarNotif('focus-checkin','⚡ Check-in — Focus',`¿Sigues con: "${t.text}"?`,(S.cfg.interval||30)*60000,true,true);
 }
-function restartCheckin(){cancelarNotif('focus-checkin'); programarCheckin();}
+function restartCheckin(){cancelarNotif('focus-checkin');programarCheckin();}
 
-// ══════════════════════════════════════════════
-// NOTIFICACIÓN PERSISTENTE EN LA BARRA (con cronómetro vivo)
-// ══════════════════════════════════════════════
-function iniciarNotifProgreso(taskText){
-  if(Notification.permission!=='granted') return;
-  navigator.serviceWorker.ready.then(reg=>{
-    const ctrl=reg.active||navigator.serviceWorker.controller;
-    if(ctrl) ctrl.postMessage({
-      type:'PROGRESS_START',
-      taskText,
-      startTime:S.state.sessionStart,
-      accumulatedMs:(S.tasks.find(t=>t.id===S.cur)?.totalMs)||0
-    });
-  }).catch(()=>{});
+// Notif persistente progreso
+function iniciarNotifProgreso(txt){if(Notification.permission!=='granted')return;navigator.serviceWorker.ready.then(reg=>{const c=reg.active||navigator.serviceWorker.controller;if(c)c.postMessage({type:'PROGRESS_START',taskText:txt,startTime:S.state.sessionStart,accumulatedMs:(S.tasks.find(t=>t.id===S.cur)?.totalMs)||0});}).catch(()=>{});}
+function detenerNotifProgreso(){if('serviceWorker'in navigator)navigator.serviceWorker.ready.then(reg=>{const c=reg.active||navigator.serviceWorker.controller;if(c)c.postMessage({type:'PROGRESS_STOP'});}).catch(()=>{});}
+// Notif descanso
+function iniciarNotifDescanso(min){if(Notification.permission!=='granted')return;navigator.serviceWorker.ready.then(reg=>{const c=reg.active||navigator.serviceWorker.controller;if(c)c.postMessage({type:'BREAK_START',endTime:Date.now()+min*60000,duration:min});}).catch(()=>{});}
+function detenerNotifDescanso(){if('serviceWorker'in navigator)navigator.serviceWorker.ready.then(reg=>{const c=reg.active||navigator.serviceWorker.controller;if(c)c.postMessage({type:'BREAK_STOP'});}).catch(()=>{});}
+// Pulso
+function iniciarPulso(){if(Notification.permission!=='granted'||!(S.cfg.pulse>0))return;navigator.serviceWorker.ready.then(reg=>{const c=reg.active||navigator.serviceWorker.controller;if(c)c.postMessage({type:'PULSE_START',intervalMin:S.cfg.pulse});}).catch(()=>{});}
+function detenerPulso(){if('serviceWorker'in navigator)navigator.serviceWorker.ready.then(reg=>{const c=reg.active||navigator.serviceWorker.controller;if(c)c.postMessage({type:'PULSE_STOP'});}).catch(()=>{});}
+// Distracción
+function iniciarDistraccionWatch(){if(Notification.permission!=='granted'||S.cfg.invasivo===false)return;const t=S.cur?S.tasks.find(x=>x.id===S.cur):null;navigator.serviceWorker.ready.then(reg=>{const c=reg.active||navigator.serviceWorker.controller;if(c)c.postMessage({type:'DISTRACTION_START',taskText:t?t.text:'tu tarea'});}).catch(()=>{});}
+function detenerDistraccionWatch(){if('serviceWorker'in navigator)navigator.serviceWorker.ready.then(reg=>{const c=reg.active||navigator.serviceWorker.controller;if(c)c.postMessage({type:'DISTRACTION_STOP'});}).catch(()=>{});}
+// Idle reminder (cuando NO usas la app)
+function iniciarIdleWatch(){
+  if(Notification.permission!=='granted'||!(S.cfg.idle>0))return;
+  navigator.serviceWorker.ready.then(reg=>{const c=reg.active||navigator.serviceWorker.controller;if(c)c.postMessage({type:'IDLE_START',intervalMin:S.cfg.idle});}).catch(()=>{});
 }
-function detenerNotifProgreso(){
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.ready.then(reg=>{
-      const ctrl=reg.active||navigator.serviceWorker.controller;
-      if(ctrl) ctrl.postMessage({type:'PROGRESS_STOP'});
-    }).catch(()=>{});
-  }
-}
+function detenerIdleWatch(){if('serviceWorker'in navigator)navigator.serviceWorker.ready.then(reg=>{const c=reg.active||navigator.serviceWorker.controller;if(c)c.postMessage({type:'IDLE_STOP'});}).catch(()=>{});}
 
-// ══════════════════════════════════════════════
-// PULSO cada X minutos (vibración + mini notif)
-// ══════════════════════════════════════════════
-function iniciarPulso(){
-  if(Notification.permission!=='granted') return;
-  navigator.serviceWorker.ready.then(reg=>{
-    const ctrl=reg.active||navigator.serviceWorker.controller;
-    if(ctrl) ctrl.postMessage({type:'PULSE_START',intervalMin:S.cfg.pulse||5});
-  }).catch(()=>{});
-}
-function detenerPulso(){
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.ready.then(reg=>{
-      const ctrl=reg.active||navigator.serviceWorker.controller;
-      if(ctrl) ctrl.postMessage({type:'PULSE_STOP'});
-    }).catch(()=>{});
-  }
-}
-
-// ══════════════════════════════════════════════
-// DETECCIÓN DE DISTRACCIÓN ESCALADA
-// ══════════════════════════════════════════════
-function iniciarDistraccionWatch(){
-  if(Notification.permission!=='granted') return;
-  if(!S.cfg.invasivo) return;
-  const t=S.cur?S.tasks.find(x=>x.id===S.cur):null;
-  navigator.serviceWorker.ready.then(reg=>{
-    const ctrl=reg.active||navigator.serviceWorker.controller;
-    if(ctrl) ctrl.postMessage({
-      type:'DISTRACTION_START',
-      taskText:t?t.text:'tu tarea'
-    });
-  }).catch(()=>{});
-}
-function detenerDistraccionWatch(){
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.ready.then(reg=>{
-      const ctrl=reg.active||navigator.serviceWorker.controller;
-      if(ctrl) ctrl.postMessage({type:'DISTRACTION_STOP'});
-    }).catch(()=>{});
-  }
-}
-
-// ══════════════════════════════════════════════
-// WAKE LOCK (mantener pantalla encendida)
-// ══════════════════════════════════════════════
+// Wake lock
 let wakeLock=null;
-async function adquirirWakeLock(){
-  if(!('wakeLock' in navigator)) return;
-  if(!S.cfg.wakeLock) return;
-  try{
-    wakeLock=await navigator.wakeLock.request('screen');
-    wakeLock.addEventListener('release',()=>{wakeLock=null;});
-  }catch(err){}
-}
-async function liberarWakeLock(){
-  if(wakeLock){
-    try{await wakeLock.release();}catch(e){}
-    wakeLock=null;
-  }
-}
+async function adquirirWakeLock(){if(!('wakeLock'in navigator)||S.cfg.wakeLock===false)return;try{wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null;});}catch(e){}}
+async function liberarWakeLock(){if(wakeLock){try{await wakeLock.release();}catch(e){}wakeLock=null;}}
 
-// Notificación persistente del descanso (cuenta regresiva)
-function iniciarNotifDescanso(minutes){
-  if(Notification.permission!=='granted') return;
-  navigator.serviceWorker.ready.then(reg=>{
-    const ctrl=reg.active||navigator.serviceWorker.controller;
-    if(ctrl) ctrl.postMessage({
-      type:'BREAK_START',
-      endTime:Date.now()+minutes*60000,
-      duration:minutes
-    });
-  }).catch(()=>{});
+// ══════════════ IN-APP BANNER ══════════════
+let bannerTO=null;
+function showBanner(icon,title,body,hasActions){
+  document.getElementById('bn-icon').textContent=icon||'🤖';
+  document.getElementById('bn-title').textContent=title;
+  document.getElementById('bn-body').textContent=body;
+  document.getElementById('bn-actions').innerHTML=hasActions?'<button class="bn-btn bn-yes" onclick="bannerYes()">✅ Sí, trabajando</button><button class="bn-btn bn-no" onclick="bannerNo()">❌ Me perdí</button>':'';
+  document.getElementById('banner').style.display='block';
+  if(bannerTO)clearTimeout(bannerTO);
+  if(!hasActions)bannerTO=setTimeout(closeBanner,5000);
 }
-function detenerNotifDescanso(){
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.ready.then(reg=>{
-      const ctrl=reg.active||navigator.serviceWorker.controller;
-      if(ctrl) ctrl.postMessage({type:'BREAK_STOP'});
-    }).catch(()=>{});
-  }
-}
-
-// ══════════════════════════════════════════════
-// IN-APP BANNER
-// ══════════════════════════════════════════════
-let bannerTimeout=null;
-function showBanner(title,body,hasActions){
-  document.getElementById('nb-title').textContent=title;
-  document.getElementById('nb-body').textContent=body;
-  const ac=document.getElementById('nb-actions');
-  ac.innerHTML=hasActions?`<button class="nb-btn nb-yes" onclick="bannerYes()">✅ Sí, trabajando</button><button class="nb-btn nb-no" onclick="bannerNo()">❌ Me perdí</button>`:'';
-  document.getElementById('notif-banner').style.display='block';
-  if(bannerTimeout) clearTimeout(bannerTimeout);
-  if(!hasActions) bannerTimeout=setTimeout(closeBanner,5000);
-}
-function closeBanner(){document.getElementById('notif-banner').style.display='none'}
-function bannerYes(){
-  closeBanner();
-  if(S.state.mode==='working'){
-    playAnim('celebracion'); setSpeech('¡Genial! ¡Sigue así! 💪');
-    setTimeout(()=>{playAnim('idle');setSpeech(idleMsg())},2500);
-  }
-}
+function closeBanner(){document.getElementById('banner').style.display='none';}
+function bannerYes(){closeBanner();marcarActividad();if(S.state.mode==='working'){playAnim('celebracion');setSpeech('¡Genial! ¡Sigue así! 💪');setTimeout(()=>{playAnim('idle');setSpeech(idleMsg())},2500);}}
 function bannerNo(){closeBanner();openDistract();}
 
-// ══════════════════════════════════════════════
-// DAILY STREAK
-// ══════════════════════════════════════════════
+// ══════════════ STREAK ══════════════
 function dailyCheck(){
-  const st=S.stats, today=new Date().toDateString();
+  const st=S.stats,today=new Date().toDateString();
   if(st.date!==today){
-    if(st.date){
-      const yest=new Date(); yest.setDate(yest.getDate()-1);
-      if(st.date===yest.toDateString()&&st.comp>0) st.streak++;
-      else if(st.comp===0) st.streak=0;
-    }
-    st.date=today; st.comp=0; st.focoMs=0; S.stats=st;
+    if(st.date){const y=new Date();y.setDate(y.getDate()-1);if(st.date===y.toDateString()&&st.comp>0)st.streak++;else if(st.comp===0)st.streak=0;}
+    st.date=today;st.comp=0;st.focoMs=0;st.distracciones=0;S.stats=st;
   }
 }
 
-// ══════════════════════════════════════════════
-// INSTALACIÓN PWA
-// ══════════════════════════════════════════════
+// ══════════════ INSTALL PWA ══════════════
 let deferredInstall=null;
-window.addEventListener('beforeinstallprompt',e=>{
-  e.preventDefault();
-  deferredInstall=e;
-  setTimeout(()=>{
-    if(!localStorage.getItem('focus_installed')&&!localStorage.getItem('focus_install_dismissed')){
-      document.getElementById('install-banner').style.display='block';
-    }
-  },2000);
-});
-window.addEventListener('appinstalled',()=>{
-  localStorage.setItem('focus_installed','1');
-  document.getElementById('install-banner').style.display='none';
-  showBanner('🎉 ¡Focus instalado!','Ahora ábrelo desde tu pantalla de inicio.',false);
-  playAnim('celebracion');
-  setSpeech('¡Estoy en tu celular! 💪');
-  setTimeout(()=>{playAnim('idle');setSpeech(idleMsg())},4000);
-});
-function instalarApp(){
-  if(deferredInstall){
-    deferredInstall.prompt();
-    deferredInstall.userChoice.then(r=>{
-      if(r.outcome==='accepted'){
-        deferredInstall=null;
-        document.getElementById('install-banner').style.display='none';
-      }
-    });
-  } else {
-    showBanner('📲 Instalación manual','Menú Chrome (⋮) → "Instalar aplicación" o "Añadir a pantalla de inicio"',false);
-  }
-}
-function cerrarInstall(){
-  document.getElementById('install-banner').style.display='none';
-  localStorage.setItem('focus_install_dismissed','1');
-}
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;setTimeout(()=>{if(!localStorage.getItem('focus_installed')&&!localStorage.getItem('focus_install_dismissed'))document.getElementById('install-banner').style.display='block';},2500);});
+window.addEventListener('appinstalled',()=>{localStorage.setItem('focus_installed','1');document.getElementById('install-banner').style.display='none';showBanner('🎉','¡Focus instalado!','Ábrelo desde tu pantalla de inicio.',false);playAnim('celebracion');setSpeech('¡Estoy en tu celular! 💪');setTimeout(()=>{playAnim('idle');setSpeech(idleMsg())},4000);});
+function instalarApp(){if(deferredInstall){deferredInstall.prompt();deferredInstall.userChoice.then(r=>{if(r.outcome==='accepted'){deferredInstall=null;document.getElementById('install-banner').style.display='none';}});}else showBanner('📲','Instalación manual','Menú Chrome (⋮) → "Instalar aplicación".',false);}
+function cerrarInstall(){document.getElementById('install-banner').style.display='none';localStorage.setItem('focus_install_dismissed','1');}
 
-// ══════════════════════════════════════════════
-// SERVICE WORKER
-// ══════════════════════════════════════════════
-if('serviceWorker' in navigator){
+// ══════════════ SERVICE WORKER ══════════════
+if('serviceWorker'in navigator){
   navigator.serviceWorker.register('./sw.js').then(async reg=>{
-    if('periodicSync' in reg){
-      try{
-        const perm=await navigator.permissions.query({name:'periodic-background-sync'});
-        if(perm.state==='granted'){
-          await reg.periodicSync.register('focus-checkin',{minInterval:30*60*1000});
-        }
-      }catch(err){}
-    }
+    if('periodicSync'in reg){try{const perm=await navigator.permissions.query({name:'periodic-background-sync'});if(perm.state==='granted')await reg.periodicSync.register('focus-checkin',{minInterval:30*60*1000});}catch(e){}}
   }).catch(()=>{});
   navigator.serviceWorker.addEventListener('message',e=>{
     const d=e.data;
-    if(d?.type==='checkin_ok'){bannerYes();}
-    else if(d?.type==='checkin_no'){bannerNo();}
-    else if(d?.type==='break_ended'){
-      // El SW terminó el descanso → actualizar UI
-      if(S.state.mode==='resting') terminarDescanso(true);
-    }
-    else if(d?.type==='scheduled_fired'){
-      showBanner(d.title,d.body,d.id==='focus-checkin');
-      playAnim('alerta');
-    }
+    if(d?.type==='checkin_ok')bannerYes();
+    else if(d?.type==='checkin_no')bannerNo();
+    else if(d?.type==='break_ended'){if(S.state.mode==='resting')terminarDescanso(true);}
+    else if(d?.type==='scheduled_fired'){showBanner('⏰',d.title,d.body,d.id==='focus-checkin');playAnim('alerta');}
   });
 }
 
-// ══════════════════════════════════════════════
-// VISIBILITY
-// ══════════════════════════════════════════════
+// ══════════════ VISIBILITY ══════════════
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden){
-    // Guardar lo trabajado por si se cierra la app
     if(S.state.mode==='working'){
       flushSesion();
-      // Contar como distracción
-      const st=S.stats;
-      st.distracciones=(st.distracciones||0)+1;
-      S.stats=st;
-      // Activar watch de distracción (notifs escalonadas)
-      if(Notification.permission==='granted'){
-        iniciarDistraccionWatch();
-        programarCheckin();
-      }
+      const st=S.stats;st.distracciones=(st.distracciones||0)+1;S.stats=st;
+      if(Notification.permission==='granted'){iniciarDistraccionWatch();programarCheckin();}
+    }else if(S.state.mode==='idle'||S.state.mode==='selected'||S.state.mode==='paused'){
+      // No estás trabajando ni descansando → recordatorio de inactividad
+      if(Notification.permission==='granted')iniciarIdleWatch();
     }
-  } else {
-    if(S.state.mode==='working'){
-      cancelarNotif('focus-checkin');
-      detenerDistraccionWatch();
-      // Re-adquirir wake lock (se libera al ocultar la página)
-      adquirirWakeLock();
-    }
-    if(screen==='inicio') renderHome();
-    if(screen==='stats') renderStats();
-    updateNotifPill();
+  }else{
+    marcarActividad();
+    if(S.state.mode==='working'){cancelarNotif('focus-checkin');detenerDistraccionWatch();adquirirWakeLock();}
+    detenerIdleWatch();
+    if(screen==='inicio')renderHome();
+    if(screen==='stats')renderStats();
+    updateNotifDot();
   }
 });
+window.addEventListener('pagehide',()=>{if(S.state.mode==='working')flushSesion();});
+window.addEventListener('beforeunload',()=>{if(S.state.mode==='working')flushSesion();});
+setInterval(()=>{if(S.state.mode==='working')flushSesion();},30000);
 
-// Flush en cerrar/recargar la página
-window.addEventListener('pagehide',()=>{
-  if(S.state.mode==='working') flushSesion();
-});
-window.addEventListener('beforeunload',()=>{
-  if(S.state.mode==='working') flushSesion();
-});
+// Detectar regreso tras ausencia larga
+function checkRegreso(){
+  const la=S.lastAct;if(!la)return;
+  const min=(Date.now()-la)/60000;
+  const idleCfg=S.cfg.idle||30;
+  if(S.state.mode==='idle'&&idleCfg>0&&min>=idleCfg){
+    playAnim('urgente');
+    setSpeech(`¡Oye! Estuviste ${Math.floor(min)} min sin usar Focus. ¿Qué estuviste haciendo? ¡Registra una tarea!`);
+    if(Notification.permission==='granted')notificarLocal('👀 ¿Dónde estuviste?',`${Math.floor(min)} min sin actividad. ¡Registra algo en Focus!`,true,false);
+    setTimeout(()=>{playAnim('idle');setSpeech(idleMsg())},6000);
+  }
+}
 
-// Flush periódico cada 30 segundos mientras trabajas
-setInterval(()=>{
-  if(S.state.mode==='working') flushSesion();
-},30000);
-
-// ══════════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════════
+// ══════════════ INIT ══════════════
 function init(){
-  dailyCheck();
-  playAnim('idle');
-  setSpeech(idleMsg());
-  renderHome();
-  startHomeRefresh();
-  updateNotifPill();
-  // Restaurar estado
+  dailyCheck();playAnim('idle');setSpeech(idleMsg());
+  renderHome();startHomeRefresh();updateNotifDot();
   const state=S.state;
-  if(state.mode==='resting' && state.end<=Date.now()){
-    terminarDescanso(true);
-  } else if(state.mode==='resting' && Notification.permission==='granted'){
-    // Restaurar notif de descanso
-    const remaining=state.end-Date.now();
-    iniciarNotifDescanso(Math.ceil(remaining/60000));
-  } else if(state.mode==='working' && Notification.permission==='granted'){
-    programarCheckin();
-    iniciarPulso();
-    adquirirWakeLock();
-    // Restaurar notif persistente del cronómetro
-    const t=S.cur?S.tasks.find(x=>x.id===S.cur):null;
-    if(t) iniciarNotifProgreso(t.text);
-  }
+  if(state.mode==='resting'&&state.end<=Date.now())terminarDescanso(true);
+  else if(state.mode==='resting'&&Notification.permission==='granted')iniciarNotifDescanso(Math.ceil((state.end-Date.now())/60000));
+  else if(state.mode==='working'&&Notification.permission==='granted'){programarCheckin();iniciarPulso();adquirirWakeLock();const t=S.cur?S.tasks.find(x=>x.id===S.cur):null;if(t)iniciarNotifProgreso(t.text);}
+  checkRegreso();
+  marcarActividad();
 }
 init();
 </script>

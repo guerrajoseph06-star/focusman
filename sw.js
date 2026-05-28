@@ -1,4 +1,4 @@
-const CACHE_NAME = 'focus-v6';
+const CACHE_NAME = 'focus-v7';
 const BASE = self.location.pathname.replace('sw.js', '');
 
 const ARCHIVOS = [
@@ -19,6 +19,7 @@ let progressState = null;
 let breakState = null;
 let pulseState = null;        // {intervalMs, timer}
 let distractionState = null;  // {taskText, startTime, stage, timer}
+let idleState = null;         // {intervalMs, timer, count}
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ARCHIVOS)));
@@ -258,6 +259,40 @@ function stopDistraction(){
 }
 
 // ──────────────────────────────
+// IDLE: recordatorio cuando NO usas la app
+// ──────────────────────────────
+async function fireIdle(){
+  if(!idleState) return;
+  if(await isFocused()){ stopIdle(); return; }
+  idleState.count = (idleState.count||0) + 1;
+  const mins = idleState.count * (idleState.intervalMs/60000);
+  await self.registration.showNotification('👀 ¿Qué estás haciendo?', {
+    body: `Llevas un rato sin usar Focus. ¿Estás estudiando? Registra una tarea o márcate un descanso.`,
+    icon: BASE + 'icon-192.png',
+    badge: BASE + 'icon-192.png',
+    image: BASE + 'sprites/megaman-alerta.png',
+    vibrate: [250,100,250,100,400],
+    requireInteraction: true,
+    silent: false,
+    tag: 'focus-idle',
+    renotify: true,
+    timestamp: Date.now()
+  });
+}
+function startIdle(intervalMin){
+  stopIdle();
+  if(!intervalMin || intervalMin <= 0) return;
+  const ms = intervalMin * 60 * 1000;
+  idleState = { intervalMs: ms, count: 0 };
+  idleState.timer = setInterval(fireIdle, ms);
+}
+function stopIdle(){
+  if(idleState?.timer) clearInterval(idleState.timer);
+  idleState = null;
+  self.registration.getNotifications({tag:'focus-idle'}).then(ns=>ns.forEach(n=>n.close())).catch(()=>{});
+}
+
+// ──────────────────────────────
 // Notificaciones programadas (one-shot)
 // ──────────────────────────────
 async function mostrarNotif(title, body, urgent, withActions){
@@ -319,6 +354,8 @@ self.addEventListener('message', e => {
   else if(d.type === 'PULSE_STOP') stopPulse();
   else if(d.type === 'DISTRACTION_START') startDistraction(d.taskText);
   else if(d.type === 'DISTRACTION_STOP') stopDistraction();
+  else if(d.type === 'IDLE_START') startIdle(d.intervalMin);
+  else if(d.type === 'IDLE_STOP') stopIdle();
   else if(d.type === 'PING') e.source && e.source.postMessage({type:'PONG'});
 });
 
